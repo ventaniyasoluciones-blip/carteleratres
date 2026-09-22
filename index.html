@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartelera Interactiva | La Vía del Milisegundo</title>
+    <title>Cartelera Interactiva Fija y Editable | La Vía del Milisegundo</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -107,48 +107,24 @@
             text-shadow: 0 0 5px var(--neon-blue);
         }
 
-        .upload-btn-container {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
+        .generator-box {
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px dashed var(--neon-blue);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
         }
 
-        .btn-upload-repo {
-            background: #0b1120;
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.75rem;
-            font-weight: bold;
-            padding: 8px 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            box-shadow: 0 0 8px rgba(0, 243, 255, 0.2);
-            transition: all 0.2s;
-            text-transform: uppercase;
-        }
-
-        .btn-upload-repo:hover {
-            background: var(--neon-blue);
-            color: #000;
-            box-shadow: 0 0 12px var(--neon-blue);
-        }
-
-        .upload-btn-container input[type="file"] {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
+        .generator-box label { color: var(--neon-blue); font-weight: bold; }
 
         .grid-estampas {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 12px;
-            max-height: 70vh;
+            max-height: 55vh;
             overflow-y: auto;
             padding-right: 5px;
         }
@@ -260,7 +236,7 @@
     <header>
         <div class="brand">
             <h1>VENTANIYA</h1>
-            <p>LA VÍA DEL MILISEGUNDO // CARTELERA DE ESTAMPAS</p>
+            <p>LA VÍA DEL MILISEGUNDO // CARTELERA FIJA Y EDITABLE</p>
         </div>
         <div class="casio-clock-container">
             <div id="live-time" class="time-display">00:00:00.000</div>
@@ -271,13 +247,18 @@
     <div class="main-layout">
         <div class="gallery-section">
             <div class="section-header">
-                <div class="section-title" id="gallery-title">Colección de Estampas</div>
-                <div class="upload-btn-container">
-                    <button class="btn-upload-repo">📁 Cargar Estampas PNG</button>
-                    <input type="file" id="repoFilesInput" accept="image/png, image/jpeg" multiple>
-                </div>
+                <div class="section-title" id="gallery-title">Colección Fija de Estampas</div>
             </div>
+
+            <!-- Grilla de estampas -->
             <div class="grid-estampas" id="gridEstampas"></div>
+
+            <!-- Herramienta auxiliar para desarrolladores / agregar nuevas -->
+            <div class="generator-box">
+                <label>➕ Generar código para nueva estampa fija:</label>
+                <input type="file" id="newPngTool" accept="image/png, image/jpeg">
+                <textarea id="codeOutput" rows="2" readonly placeholder="Fragmento de código listo para añadir al array..."></textarea>
+            </div>
         </div>
 
         <div class="editor-panel">
@@ -289,23 +270,23 @@
             </div>
 
             <div class="form-group">
-                <label>Nombre del Comercio (EstampiYA de Tiempo):</label>
-                <input type="text" id="sponsorName" value="EstampiYA de Tiempo">
+                <label>Nombre del Comercio:</label>
+                <input type="text" id="sponsorName">
             </div>
 
             <div class="form-group">
                 <label>Teléfono de Contacto:</label>
-                <input type="text" id="sponsorPhone" value="">
+                <input type="text" id="sponsorPhone">
             </div>
 
             <div class="form-group">
                 <label>Dirección / Ubicación:</label>
-                <input type="text" id="sponsorAddress" value="">
+                <input type="text" id="sponsorAddress">
             </div>
 
             <div class="form-group">
                 <label>Instagram / Mensaje (IG):</label>
-                <input type="text" id="sponsorMsg" value="">
+                <input type="text" id="sponsorMsg">
             </div>
 
             <div class="form-group">
@@ -337,31 +318,44 @@
         }
         setInterval(updateClock, 30);
 
-        let estampasData = [];
+        // --- LISTA FIJA DE ESTAMPAS Y SUS AVISOS PREDETERMINADOS ---
+        // Aquí defines tanto la imagen fija como el aviso que aparecerá por defecto para cada una.
+        let estampasData = [
+            {
+                id: 1,
+                name: "fora.png",
+                url: "fora.png", 
+                hash: "git#fora777x1",
+                defaultSponsor: {
+                    name: "EstampiYA de Tiempo",
+                    phone: "+54 9 11 0000-0000",
+                    address: "Av. Del Milisegundo 777",
+                    msg: "@ventaniya.oficial"
+                },
+                uploadedLogo: null
+            }
+            // Puedes agregar más estampas fijas aquí abajo con sus respectivos avisos iniciales
+        ];
+
         let selectedEstampa = null;
         const grid = document.getElementById('gridEstampas');
 
         function getStorageKey(filename) {
-            return `ventaniya_sponsor_${filename}`;
+            return `ventaniya_sponsor_fijo_v2_${filename}`;
         }
 
         function loadSponsorForSelected() {
             if (!selectedEstampa) return;
             const savedData = JSON.parse(localStorage.getItem(getStorageKey(selectedEstampa.name)));
             
-            if (savedData) {
-                document.getElementById('sponsorName').value = savedData.name || "EstampiYA de Tiempo";
-                document.getElementById('sponsorPhone').value = savedData.phone || "";
-                document.getElementById('sponsorAddress').value = savedData.address || "";
-                document.getElementById('sponsorMsg').value = savedData.msg || "";
-                selectedEstampa.uploadedLogo = savedData.logo || null;
-            } else {
-                document.getElementById('sponsorName').value = "EstampiYA de Tiempo";
-                document.getElementById('sponsorPhone').value = "";
-                document.getElementById('sponsorAddress').value = "";
-                document.getElementById('sponsorMsg').value = "";
-                selectedEstampa.uploadedLogo = null;
-            }
+            // Si hay datos guardados localmente (editados), se usan; si no, se cargan los fijos por defecto de la estampa
+            const dataToUse = savedData || selectedEstampa.defaultSponsor;
+
+            document.getElementById('sponsorName').value = dataToUse.name || "";
+            document.getElementById('sponsorPhone').value = dataToUse.phone || "";
+            document.getElementById('sponsorAddress').value = dataToUse.address || "";
+            document.getElementById('sponsorMsg').value = dataToUse.msg || "";
+            selectedEstampa.uploadedLogo = dataToUse.logo || null;
         }
 
         function saveSponsorForSelected() {
@@ -393,32 +387,32 @@
             }
         });
 
-        // Manejador para cargar las estampas desde la computadora / repositorio local de golpe
-        document.getElementById('repoFilesInput').addEventListener('change', function(e) {
-            const files = Array.from(e.target.files);
-            if (files.length === 0) return;
-
-            let loadedCount = 0;
-            files.forEach((file, idx) => {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const hash = "git#" + Math.random().toString(36).substring(2, 10) + idx.toString(16);
-                    estampasData.push({
-                        id: estampasData.length + 1,
-                        name: file.name,
-                        url: event.target.result,
-                        hash: hash,
-                        uploadedLogo: null
-                    });
-                    loadedCount++;
-                    if (loadedCount === files.length) {
-                        document.getElementById('gallery-title').textContent = `Colección (${estampasData.length} Estampas)`;
-                        renderGrid();
-                    }
-                }
-                reader.readAsDataURL(file);
-            });
+        document.getElementById('newPngTool').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const base64String = event.target.result;
+                const snippet = `{\n    id: ${estampasData.length + 1},\n    name: "${file.name}",\n    url: "${base64String}",\n    hash: "git#${Math.random().toString(36).substring(2, 8)}",\n    defaultSponsor: {\n        name: "EstampiYA de Tiempo",\n        phone: "",\n        address: "",\n        msg: ""\n    },\n    uploadedLogo: null\n},`;
+                document.getElementById('codeOutput').value = snippet;
+                
+                estampasData.push({
+                    id: estampasData.length + 1,
+                    name: file.name,
+                    url: base64String,
+                    hash: "git#" + Math.random().toString(36).substring(2, 8),
+                    defaultSponsor: { name: "EstampiYA de Tiempo", phone: "", address: "", msg: "" },
+                    uploadedLogo: null
+                });
+                renderGrid();
+            }
+            reader.readAsDataURL(file);
         });
+
+        function inicializarCartelera() {
+            document.getElementById('gallery-title').textContent = `Colección Fija (${estampasData.length} Estampas)`;
+            renderGrid();
+        }
 
         function renderGrid() {
             grid.innerHTML = '';
@@ -426,7 +420,7 @@
                 const card = document.createElement('div');
                 card.className = `estampa-card ${selectedEstampa && selectedEstampa.name === item.name ? 'selected' : (index === 0 && !selectedEstampa ? 'selected' : '')}`;
                 card.innerHTML = `
-                    <img class="estampa-thumb" src="${item.url}" crossorigin="anonymous">
+                    <img class="estampa-thumb" src="${item.url}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/140x110/050814/00f3ff?text=PNG'">
                     <div class="estampa-info">
                         <div class="estampa-id">ESTAMPA #${String(item.id).padStart(3, '0')}</div>
                         <div class="estampa-hash" title="${item.hash}">${item.hash}</div>
@@ -601,6 +595,8 @@
             link.href = canvas.toDataURL('image/png');
             link.click();
         };
+
+        inicializarCartelera();
     </script>
 </body>
 </html>
