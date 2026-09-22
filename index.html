@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartelera VentaniYA - Doble Opción</title>
+    <title>Cartelera VentaniYA - Versión Definitiva</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -181,12 +181,6 @@
 
         #preview-canvas { max-width: 100%; height: auto; display: block; }
 
-        .button-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
         .btn-action {
             background: linear-gradient(90deg, #00f3ff, #0077ff);
             color: #000;
@@ -219,7 +213,7 @@
     <header>
         <div class="brand">
             <h1>VENTANIYA</h1>
-            <p>CARTELERA AUTOMÁTICA - DOBLE OPCIÓN</p>
+            <p>CARTELERA AUTOMÁTICA - DOBLE BOTÓN</p>
         </div>
         <div class="casio-clock-container">
             <div id="live-time" class="time-display">00:00:00.000</div>
@@ -236,7 +230,7 @@
         </div>
 
         <div class="editor-panel">
-            <div class="editor-title">Panel de Datos del Auspiciante</div>
+            <div class="editor-title">Panel de Auspicio Fijo</div>
             
             <div class="form-group">
                 <label>Nombre del Comercio:</label>
@@ -259,16 +253,17 @@
             </div>
 
             <div class="form-group">
-                <label>Vista Previa en Tiempo Real:</label>
+                <label>Vista Previa:</label>
                 <div class="preview-container">
                     <canvas id="preview-canvas" width="600" height="600"></canvas>
                 </div>
             </div>
 
-            <div class="button-group">
-                <button class="btn-action" id="btnDownloadFixed">1. Cargar como Aviso Fijo</button>
-                <button class="btn-action btn-secondary" id="btnDownloadClean">2. Descargar Estampilla Limpia</button>
-            </div>
+            <!-- BOTÓN 1: Guarda la imagen con el aviso fijo grabado -->
+            <button class="btn-action" id="btnSaveFixed">1. Cargar y Descargar con Aviso Fijo</button>
+
+            <!-- BOTÓN 2: Descarga la estampilla limpia con reloj y línea de tiempo -->
+            <button class="btn-action btn-secondary" id="btnDownloadClean">2. Descargar Estampilla Limpia</button>
         </div>
     </div>
 
@@ -303,7 +298,7 @@
                 grid.innerHTML = '';
 
                 if (imagenes.length === 0) {
-                    grid.innerHTML = '<div style="color: var(--neon-pink);">No se encontraron imágenes en el repositorio.</div>';
+                    grid.innerHTML = '<div style="color: var(--neon-pink);">No se encontraron imágenes.</div>';
                     return;
                 }
 
@@ -320,19 +315,19 @@
                         document.querySelectorAll('.estampa-card').forEach(c => c.classList.remove('selected'));
                         card.classList.add('selected');
                         selectedPath = file.name;
-                        redrawCanvas(true);
+                        drawCanvas(true);
                     });
 
                     grid.appendChild(card);
 
                     if (index === 0) {
                         selectedPath = file.name;
-                        redrawCanvas(true);
+                        drawCanvas(true);
                     }
                 });
 
             } catch (error) {
-                grid.innerHTML = '<div style="color: var(--neon-pink);">Error al conectar con la API de GitHub.</div>';
+                grid.innerHTML = '<div style="color: var(--neon-pink);">Error al conectar con GitHub.</div>';
                 console.error(error);
             }
         }
@@ -340,7 +335,7 @@
         const canvas = document.getElementById('preview-canvas');
         const ctx = canvas.getContext('2d');
 
-        function redrawCanvas(includeSponsor) {
+        function drawCanvas(showSponsor) {
             if (!selectedPath) return;
 
             const img = new Image();
@@ -357,7 +352,7 @@
                 ctx.fillStyle = "rgba(5, 8, 20, 0.25)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Línea de tiempo y reloj superior
+                // Reloj y fecha
                 ctx.font = "bold 24px 'Orbitron', monospace";
                 ctx.fillStyle = "#00f3ff";
                 ctx.shadowColor = "#00f3ff";
@@ -394,8 +389,8 @@
                 ctx.fillText("MDRP", 0, 14);
                 ctx.restore();
 
-                // Si se solicita, dibuja el cartel de auspicio fijo
-                if (includeSponsor) {
+                // Si corresponde, dibuja el aviso fijo del auspiciante
+                if (showSponsor) {
                     const sName = document.getElementById('sponsorName').value.toUpperCase();
                     const sPhone = document.getElementById('sponsorPhone').value;
                     const sAddress = document.getElementById('sponsorAddress').value;
@@ -440,13 +435,13 @@
         }
 
         ['sponsorName', 'sponsorPhone', 'sponsorAddress', 'sponsorMsg'].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => redrawCanvas(true));
+            document.getElementById(id).addEventListener('input', () => drawCanvas(true));
         });
 
-        // Botón 1: Descarga con el aviso fijo grabado
-        document.getElementById('btnDownloadFixed').onclick = () => {
+        // Botón 1: Descarga con el aviso fijo grabado en la imagen
+        document.getElementById('btnSaveFixed').onclick = () => {
             if(!selectedPath) return;
-            redrawCanvas(true);
+            drawCanvas(true);
             setTimeout(() => {
                 const link = document.createElement('a');
                 link.download = `Estampa-Con-AvisoFijo.png`;
@@ -458,13 +453,13 @@
         // Botón 2: Descarga la estampilla limpia sin el cartel de abajo
         document.getElementById('btnDownloadClean').onclick = () => {
             if(!selectedPath) return;
-            redrawCanvas(false);
+            drawCanvas(false);
             setTimeout(() => {
                 const link = document.createElement('a');
                 link.download = `Estampilla-Limpia.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-                redrawCanvas(true); // Vuelve a mostrar el preview con el aviso
+                drawCanvas(true); // Restaura la vista previa con el aviso
             }, 100);
         };
 
