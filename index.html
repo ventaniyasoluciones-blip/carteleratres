@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartelera Fija y Editable | VentaniYA</title>
+    <title>Cartelera Automática | VentaniYA</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -205,7 +205,7 @@
     <header>
         <div class="brand">
             <h1>VENTANIYA</h1>
-            <p>CARTELERA DE ESTAMPAS OFICIAL</p>
+            <p>CARTELERA AUTOMÁTICA DE REPOSITORIO</p>
         </div>
         <div class="casio-clock-container">
             <div id="live-time" class="time-display">00:00:00.000</div>
@@ -215,22 +215,9 @@
 
     <div class="main-layout">
         <div class="gallery-section">
-            <div class="section-title">Selecciona una Estampa del Repositorio</div>
-            <!-- AQUÍ TÚ PONES LAS FOTOS QUE SUBES AL REPOSITORIO -->
+            <div class="section-title">Estampas del Repositorio (Carga Automática)</div>
             <div class="grid-estampas" id="gridEstampas">
-                <!-- Ejemplo: Agrega o cambia los nombres por los archivos reales que tengas subidos -->
-                <div class="estampa-card" data-path="fora.png">
-                    <img class="estampa-thumb" src="fora.png" alt="fora.png" onerror="this.src='https://via.placeholder.com/160x120/000/00f3ff?text=Imagen+No+Encontrada'">
-                    <div class="estampa-info"><div class="estampa-name">fora.png</div></div>
-                </div>
-                <div class="estampa-card" data-path="estampa2.png">
-                    <img class="estampa-thumb" src="estampa2.png" alt="estampa2.png" onerror="this.src='https://via.placeholder.com/160x120/000/00f3ff?text=Imagen+No+Encontrada'">
-                    <div class="estampa-info"><div class="estampa-name">estampa2.png</div></div>
-                </div>
-                <div class="estampa-card" data-path="estampa3.png">
-                    <img class="estampa-thumb" src="estampa3.png" alt="estampa3.png" onerror="this.src='https://via.placeholder.com/160x120/000/00f3ff?text=Imagen+No+Encontrada'">
-                    <div class="estampa-info"><div class="estampa-name">estampa3.png</div></div>
-                </div>
+                <div style="color: var(--neon-blue); padding: 10px;">Escaneando repositorio...</div>
             </div>
         </div>
 
@@ -286,26 +273,62 @@
         }
         setInterval(updateClock, 30);
 
-        // Estado inicial de la estampa seleccionada
-        let selectedPath = "fora.png"; 
+        let selectedPath = null;
+        const grid = document.getElementById('gridEstampas');
 
-        const cards = document.querySelectorAll('.estampa-card');
-        cards.forEach(card => {
-            if(card.getAttribute('data-path') === selectedPath) {
-                card.classList.add('selected');
+        // Lee automáticamente la API pública de GitHub de tu repositorio "carteleratres"
+        async function cargarRepositorioAutomatico() {
+            try {
+                const response = await fetch('https://api.github.com/repos/ventaniyasoluciones-blip/carteleratres/contents');
+                const files = await response.json();
+                
+                // Filtra solo imágenes (.png, .jpg, .jpeg)
+                const imagenes = files.filter(file => file.type === 'file' && /\.(png|jpg|jpeg)$/i.test(file.name));
+
+                grid.innerHTML = '';
+
+                if (imagenes.length === 0) {
+                    grid.innerHTML = '<div style="color: var(--neon-pink);">No se encontraron imágenes en el repositorio.</div>';
+                    return;
+                }
+
+                imagenes.forEach((file, index) => {
+                    const card = document.createElement('div');
+                    card.className = `estampa-card ${index === 0 ? 'selected' : ''}`;
+                    card.setAttribute('data-path', file.name);
+                    card.innerHTML = `
+                        <img class="estampa-thumb" src="${file.name}" alt="${file.name}" crossorigin="anonymous">
+                        <div class="estampa-info"><div class="estampa-name">${file.name}</div></div>
+                    `;
+
+                    card.addEventListener('click', () => {
+                        document.querySelectorAll('.estampa-card').forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        selectedPath = file.name;
+                        redrawCanvas();
+                    });
+
+                    grid.appendChild(card);
+
+                    // Selecciona la primera por defecto
+                    if (index === 0) {
+                        selectedPath = file.name;
+                        redrawCanvas();
+                    }
+                });
+
+            } catch (error) {
+                grid.innerHTML = '<div style="color: var(--neon-pink);">Error al conectar con la API de GitHub.</div>';
+                console.error(error);
             }
-            card.addEventListener('click', () => {
-                cards.forEach(c => c.classList.remove('selected'));
-                card.classList.add('selected');
-                selectedPath = card.getAttribute('data-path');
-                redrawCanvas();
-            });
-        });
+        }
 
         const canvas = document.getElementById('preview-canvas');
         const ctx = canvas.getContext('2d');
 
         function redrawCanvas() {
+            if (!selectedPath) return;
+
             const img = new Image();
             img.crossOrigin = "anonymous";
             img.src = selectedPath;
@@ -317,25 +340,21 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-                // Capa sutil de oscurecimiento para contraste
                 ctx.fillStyle = "rgba(5, 8, 20, 0.25)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Hora Neón Arriba Izquierda
                 ctx.font = "bold 24px 'Orbitron', monospace";
                 ctx.fillStyle = "#00f3ff";
                 ctx.shadowColor = "#00f3ff";
                 ctx.shadowBlur = 12;
                 ctx.fillText(document.getElementById('live-time').textContent, 25, 45);
 
-                // Fecha Neón
                 ctx.font = "14px 'Share Tech Mono', monospace";
                 ctx.fillStyle = "#ffffff";
                 ctx.shadowColor = "#ffffff";
                 ctx.shadowBlur = 8;
                 ctx.fillText(document.getElementById('live-date').textContent, 25, 70);
 
-                // Banner Fijo y Editable (Abajo)
                 const sName = document.getElementById('sponsorName').value.toUpperCase();
                 const sPhone = document.getElementById('sponsorPhone').value;
                 const sAddress = document.getElementById('sponsorAddress').value;
@@ -376,7 +395,6 @@
                 ctx.shadowBlur = 6;
                 ctx.fillText(sMsg, textStartX, boxY + 92);
 
-                // Sello Atómico
                 ctx.save();
                 ctx.translate(canvas.width - 75, 75);
                 ctx.beginPath();
@@ -396,27 +414,26 @@
                 ctx.font = "bold 7px 'Share Tech Mono', monospace";
                 ctx.fillText("ATÓMICO", 0, 2);
                 ctx.fillStyle = "#ff007f";
-                ctx.font = "bold 7px 'Share Tech Mono', monospace";
+                ctx.font = "bold 7px 'Orbitron', monospace";
                 ctx.fillText("MDRP", 0, 14);
                 ctx.restore();
             };
         }
 
-        // Escuchar cambios en los inputs para actualizar el aviso en tiempo real
         ['sponsorName', 'sponsorPhone', 'sponsorAddress', 'sponsorMsg'].forEach(id => {
             document.getElementById(id).addEventListener('input', redrawCanvas);
         });
 
-        // Descargar la estampa final fusionada con el aviso
         document.getElementById('btnDownload').onclick = () => {
+            if(!selectedPath) return;
             const link = document.createElement('a');
             link.download = `Estampa-VentaniYA.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         };
 
-        // Render inicial
-        redrawCanvas();
+        // Ejecutar carga automática al abrir la página
+        cargarRepositorioAutomatico();
     </script>
 </body>
 </html>
