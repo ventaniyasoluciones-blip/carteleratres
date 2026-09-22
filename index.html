@@ -219,6 +219,7 @@
             color: #00f3ff;
             text-align: center;
             min-height: 1.2rem;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -267,7 +268,7 @@
             </div>
 
             <div class="form-group">
-                <label>Vista Previa:</label>
+                <label>Vista Previa en Pantalla:</label>
                 <div class="preview-container">
                     <canvas id="preview-canvas" width="600" height="600"></canvas>
                 </div>
@@ -275,10 +276,10 @@
 
             <div class="status-msg" id="statusMsg"></div>
 
-            <!-- LOS DOS BOTONES: 1 para fijar en cartelera, 2 para descargar -->
+            <!-- BOTÓN 1: Deja fijo el aviso en la cartelera (pantalla). BOTÓN 2: Descarga -->
             <div class="btn-container">
-                <button class="btn-action" id="btnSetFixed">1. Cargar como Aviso Fijo</button>
-                <button class="btn-action btn-secondary" id="btnDownload">2. Descargar Estampilla</button>
+                <button class="btn-action" id="btnSetFixed">1. Dejar Fijo el Aviso</button>
+                <button class="btn-action btn-secondary" id="btnDownload">2. Descargar Estampa</button>
             </div>
         </div>
     </div>
@@ -304,7 +305,7 @@
         let selectedPath = null;
         const grid = document.getElementById('gridEstampas');
 
-        // Cargar datos guardados si existen previamente
+        // Recuperar datos guardados si existen
         if(localStorage.getItem('ventaniya_name')) document.getElementById('sponsorName').value = localStorage.getItem('ventaniya_name');
         if(localStorage.getItem('ventaniya_phone')) document.getElementById('sponsorPhone').value = localStorage.getItem('ventaniya_phone');
         if(localStorage.getItem('ventaniya_address')) document.getElementById('sponsorAddress').value = localStorage.getItem('ventaniya_address');
@@ -336,7 +337,7 @@
                         document.querySelectorAll('.estampa-card').forEach(c => c.classList.remove('selected'));
                         card.classList.add('selected');
                         selectedPath = file.name;
-                        renderCanvas(true);
+                        renderCanvas();
                     });
 
                     grid.appendChild(card);
@@ -349,7 +350,7 @@
                 if (!selectedPath && imagenes.length > 0) {
                     selectedPath = imagenes[0].name;
                 }
-                renderCanvas(true);
+                renderCanvas();
 
             } catch (error) {
                 grid.innerHTML = '<div style="color: var(--neon-pink);">Error al conectar.</div>';
@@ -359,7 +360,7 @@
         const canvas = document.getElementById('preview-canvas');
         const ctx = canvas.getContext('2d');
 
-        function renderCanvas(drawSponsorBox) {
+        function renderCanvas() {
             if (!selectedPath) return;
 
             const img = new Image();
@@ -413,55 +414,53 @@
                 ctx.fillText("MDRP", 0, 14);
                 ctx.restore();
 
-                // Recuadro de auspicio fijo
-                if (drawSponsorBox) {
-                    const sName = document.getElementById('sponsorName').value.toUpperCase();
-                    const sPhone = document.getElementById('sponsorPhone').value;
-                    const sAddress = document.getElementById('sponsorAddress').value;
-                    const sMsg = document.getElementById('sponsorMsg').value;
+                // Recuadro de auspicio fijo en pantalla
+                const sName = document.getElementById('sponsorName').value.toUpperCase();
+                const sPhone = document.getElementById('sponsorPhone').value;
+                const sAddress = document.getElementById('sponsorAddress').value;
+                const sMsg = document.getElementById('sponsorMsg').value;
 
-                    const boxX = 20, boxY = canvas.height - 130, boxW = 560, boxH = 100;
+                const boxX = 20, boxY = canvas.height - 130, boxW = 560, boxH = 100;
 
-                    ctx.save();
-                    ctx.shadowColor = "#00f3ff";
-                    ctx.shadowBlur = 15;
-                    ctx.fillStyle = "rgba(5, 8, 20, 0.95)";
-                    ctx.strokeStyle = "#00f3ff";
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.rect(boxX, boxY, boxW, boxH);
-                    ctx.fill();
-                    ctx.stroke();
-                    ctx.restore();
+                ctx.save();
+                ctx.shadowColor = "#00f3ff";
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = "rgba(5, 8, 20, 0.95)";
+                ctx.strokeStyle = "#00f3ff";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.rect(boxX, boxY, boxW, boxH);
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
 
-                    let textStartX = boxX + 20;
-                    ctx.font = "bold 20px 'Orbitron', monospace";
-                    ctx.fillStyle = "#00f3ff";
-                    ctx.shadowColor = "#00f3ff";
-                    ctx.shadowBlur = 10;
-                    ctx.fillText(sName, textStartX, boxY + 28);
+                let textStartX = boxX + 20;
+                ctx.font = "bold 20px 'Orbitron', monospace";
+                ctx.fillStyle = "#00f3ff";
+                ctx.shadowColor = "#00f3ff";
+                ctx.shadowBlur = 10;
+                ctx.fillText(sName, textStartX, boxY + 28);
 
-                    ctx.font = "bold 13px 'Share Tech Mono', monospace";
-                    ctx.fillStyle = "#ffffff";
-                    ctx.shadowColor = "#ffffff";
-                    ctx.shadowBlur = 5;
-                    ctx.fillText(sPhone, textStartX, boxY + 52);
-                    ctx.fillText(sAddress, textStartX, boxY + 72);
+                ctx.font = "bold 13px 'Share Tech Mono', monospace";
+                ctx.fillStyle = "#ffffff";
+                ctx.shadowColor = "#ffffff";
+                ctx.shadowBlur = 5;
+                ctx.fillText(sPhone, textStartX, boxY + 52);
+                ctx.fillText(sAddress, textStartX, boxY + 72);
 
-                    ctx.font = "bold 13px 'Share Tech Mono', monospace";
-                    ctx.fillStyle = "#ff007f";
-                    ctx.shadowColor = "#ff007f";
-                    ctx.shadowBlur = 6;
-                    ctx.fillText(sMsg, textStartX, boxY + 92);
-                }
+                ctx.font = "bold 13px 'Share Tech Mono', monospace";
+                ctx.fillStyle = "#ff007f";
+                ctx.shadowColor = "#ff007f";
+                ctx.shadowBlur = 6;
+                ctx.fillText(sMsg, textStartX, boxY + 92);
             };
         }
 
         ['sponsorName', 'sponsorPhone', 'sponsorAddress', 'sponsorMsg'].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => renderCanvas(true));
+            document.getElementById(id).addEventListener('input', () => renderCanvas());
         });
 
-        // BOTÓN 1: Carga y deja fijo el aviso en la cartelera (guarda estado)
+        // BOTÓN 1: Guarda y fija de manera permanente los datos en la cartelera (sin descargar nada)
         document.getElementById('btnSetFixed').onclick = () => {
             if(!selectedPath) return;
             localStorage.setItem('ventaniya_name', document.getElementById('sponsorName').value);
@@ -470,19 +469,19 @@
             localStorage.setItem('ventaniya_msg', document.getElementById('sponsorMsg').value);
             localStorage.setItem('ventaniya_image', selectedPath);
 
-            renderCanvas(true);
+            renderCanvas();
             const msg = document.getElementById('statusMsg');
-            msg.textContent = "¡Aviso fijado correctamente en la cartelera!";
-            setTimeout(() => { msg.textContent = ""; }, 3000);
+            msg.textContent = "¡Aviso fijado en la cartelera correctamente!";
+            setTimeout(() => { msg.textContent = ""; }, 3500);
         };
 
-        // BOTÓN 2: Descarga la imagen actual de la estampa
+        // BOTÓN 2: Es el ÚNICO que descarga la imagen final a la PC
         document.getElementById('btnDownload').onclick = () => {
             if(!selectedPath) return;
-            renderCanvas(true);
+            renderCanvas();
             setTimeout(() => {
                 const link = document.createElement('a');
-                link.download = `Estampa-Cartelera.png`;
+                link.download = `Estampa-Aviso-Fijo.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             }, 100);
