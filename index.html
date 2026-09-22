@@ -90,6 +90,14 @@
 
         .gallery-section { display: flex; flex-direction: column; gap: 15px; }
 
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
         .section-title {
             font-family: 'Orbitron', sans-serif;
             font-size: 1.1rem;
@@ -99,11 +107,48 @@
             text-shadow: 0 0 5px var(--neon-blue);
         }
 
+        .upload-btn-container {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .btn-upload-repo {
+            background: #0b1120;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(0, 243, 255, 0.2);
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
+
+        .btn-upload-repo:hover {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 12px var(--neon-blue);
+        }
+
+        .upload-btn-container input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
         .grid-estampas {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 12px;
-            max-height: 75vh;
+            max-height: 70vh;
             overflow-y: auto;
             padding-right: 5px;
         }
@@ -225,7 +270,13 @@
 
     <div class="main-layout">
         <div class="gallery-section">
-            <div class="section-title" id="gallery-title">Colección de Estampas del Repositorio</div>
+            <div class="section-header">
+                <div class="section-title" id="gallery-title">Colección de Estampas</div>
+                <div class="upload-btn-container">
+                    <button class="btn-upload-repo">📁 Cargar Estampas PNG</button>
+                    <input type="file" id="repoFilesInput" accept="image/png, image/jpeg" multiple>
+                </div>
+            </div>
             <div class="grid-estampas" id="gridEstampas"></div>
         </div>
 
@@ -286,15 +337,6 @@
         }
         setInterval(updateClock, 30);
 
-        // --- LISTA DE ESTAMPAS DEL REPOSITORIO ---
-        // Aquí puedes agregar los nombres exactos de los archivos .png que subas a tu repositorio de GitHub (ej: 'fora.png', 'estampa2.png', 'estampa3.png')
-        const archivosEstampas = [
-            "fora.png"
-            // Agrega aquí nuevos archivos PNG conforme los vayas subiendo, ejemplo:
-            // "estampa2.png",
-            // "estampa3.png"
-        ];
-
         let estampasData = [];
         let selectedEstampa = null;
         const grid = document.getElementById('gridEstampas');
@@ -351,29 +393,40 @@
             }
         });
 
-        function inicializarCartelera() {
-            estampasData = archivosEstampas.map((filename, index) => {
-                const hash = "git#" + Math.random().toString(36).substring(2, 10) + index.toString(16);
-                return {
-                    id: index + 1,
-                    name: filename,
-                    url: filename, // Carga directa y segura por ruta relativa
-                    hash: hash,
-                    uploadedLogo: null
-                };
-            });
+        // Manejador para cargar las estampas desde la computadora / repositorio local de golpe
+        document.getElementById('repoFilesInput').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
 
-            document.getElementById('gallery-title').textContent = `Colección Directa (${estampasData.length} Estampas)`;
-            renderGrid();
-        }
+            let loadedCount = 0;
+            files.forEach((file, idx) => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const hash = "git#" + Math.random().toString(36).substring(2, 10) + idx.toString(16);
+                    estampasData.push({
+                        id: estampasData.length + 1,
+                        name: file.name,
+                        url: event.target.result,
+                        hash: hash,
+                        uploadedLogo: null
+                    });
+                    loadedCount++;
+                    if (loadedCount === files.length) {
+                        document.getElementById('gallery-title').textContent = `Colección (${estampasData.length} Estampas)`;
+                        renderGrid();
+                    }
+                }
+                reader.readAsDataURL(file);
+            });
+        });
 
         function renderGrid() {
             grid.innerHTML = '';
             estampasData.forEach((item, index) => {
                 const card = document.createElement('div');
-                card.className = `estampa-card ${index === 0 ? 'selected' : ''}`;
+                card.className = `estampa-card ${selectedEstampa && selectedEstampa.name === item.name ? 'selected' : (index === 0 && !selectedEstampa ? 'selected' : '')}`;
                 card.innerHTML = `
-                    <img class="estampa-thumb" src="${item.url}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/140x110/050814/00f3ff?text=PNG+No+Encontrado'">
+                    <img class="estampa-thumb" src="${item.url}" crossorigin="anonymous">
                     <div class="estampa-info">
                         <div class="estampa-id">ESTAMPA #${String(item.id).padStart(3, '0')}</div>
                         <div class="estampa-hash" title="${item.hash}">${item.hash}</div>
@@ -382,14 +435,14 @@
                 card.onclick = () => selectEstampa(item, card);
                 grid.appendChild(card);
             });
-            if (estampasData.length > 0) {
+            if (estampasData.length > 0 && !selectedEstampa) {
                 selectEstampa(estampasData[0], grid.firstChild);
             }
         }
 
         function selectEstampa(item, cardElement) {
             document.querySelectorAll('.estampa-card').forEach(c => c.classList.remove('selected'));
-            cardElement.classList.add('selected');
+            if(cardElement) cardElement.classList.add('selected');
             selectedEstampa = item;
             
             document.getElementById('editor-panel-title').textContent = `Avisador para: ${item.name}`;
@@ -476,7 +529,7 @@
                     textStartX = boxX + 115; 
                 }
 
-                // Nombre del Comercio (EstampiYA de Tiempo)
+                // Nombre del Comercio
                 ctx.font = "bold 21px 'Orbitron', monospace";
                 ctx.fillStyle = "#00f3ff";
                 ctx.shadowColor = "#00f3ff";
@@ -542,13 +595,12 @@
         });
 
         document.getElementById('btnDownload').onclick = () => {
+            if(!selectedEstampa) return;
             const link = document.createElement('a');
             link.download = `Estampa-${selectedEstampa.id}-VentaniYA.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         };
-
-        inicializarCartelera();
     </script>
 </body>
 </html>
