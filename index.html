@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartelera VentaniYA - Fijar y Descargar</title>
+    <title>Cartelera VentaniYA - Visor Principal</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -87,6 +87,31 @@
             .main-layout { grid-template-columns: 1fr; }
         }
 
+        .display-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cartelera-principal-container {
+            width: 100%;
+            max-width: 700px;
+            background: #000;
+            border: 3px solid var(--neon-blue);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.5);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #cartelera-canvas {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
         .gallery-section { display: flex; flex-direction: column; gap: 15px; }
 
         .section-title {
@@ -100,9 +125,9 @@
 
         .grid-estampas {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 12px;
-            max-height: 75vh;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            max-height: 45vh;
             overflow-y: auto;
             padding-right: 5px;
         }
@@ -130,8 +155,8 @@
             box-shadow: 0 0 15px var(--neon-pink);
         }
 
-        .estampa-thumb { width: 100%; height: 120px; object-fit: cover; background: #000; display: block; }
-        .estampa-info { padding: 8px; font-size: 0.75rem; text-align: center; }
+        .estampa-thumb { width: 100%; height: 100px; object-fit: cover; background: #000; display: block; }
+        .estampa-info { padding: 6px; font-size: 0.7rem; text-align: center; }
         .estampa-name { color: var(--neon-blue); font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .editor-panel {
@@ -167,19 +192,6 @@
             font-family: 'Share Tech Mono', monospace;
             font-size: 1.05rem;
         }
-
-        .preview-container {
-            width: 100%;
-            background: #000;
-            border: 1px dashed var(--neon-blue);
-            border-radius: 6px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-        }
-
-        #preview-canvas { max-width: 100%; height: auto; display: block; }
 
         .btn-container {
             display: grid;
@@ -228,7 +240,7 @@
     <header>
         <div class="brand">
             <h1>VENTANIYA</h1>
-            <p>CARTELERA AUTOMÁTICA - FIJAR Y DESCARGAR</p>
+            <p>CARTELERA OFICIAL EN VIVO</p>
         </div>
         <div class="casio-clock-container">
             <div id="live-time" class="time-display">00:00:00.000</div>
@@ -237,13 +249,15 @@
     </header>
 
     <div class="main-layout">
-        <div class="gallery-section">
-            <div class="section-title">Estampas del Repositorio</div>
-            <div class="grid-estampas" id="gridEstampas">
-                <div style="color: var(--neon-blue); padding: 10px;">Escaneando repositorio...</div>
+        <!-- PANTALLA / VENTANA PRINCIPAL DE LA CARTELERA -->
+        <div class="display-section">
+            <div class="section-title" style="align-self: flex-start;">Ventana de Cartelera en Vivo</div>
+            <div class="cartelera-principal-container">
+                <canvas id="cartelera-canvas" width="800" height="800"></canvas>
             </div>
         </div>
 
+        <!-- PANEL DE CONTROL -->
         <div class="editor-panel">
             <div class="editor-title">Panel de Control</div>
             
@@ -267,18 +281,16 @@
                 <input type="text" id="sponsorMsg" value="@tucomercio">
             </div>
 
-            <div class="form-group">
-                <label>Vista Previa en Pantalla:</label>
-                <div class="preview-container">
-                    <canvas id="preview-canvas" width="600" height="600"></canvas>
-                </div>
+            <div class="section-title" style="margin-top: 5px;">Seleccionar Estampa:</div>
+            <div class="grid-estampas" id="gridEstampas">
+                <div style="color: var(--neon-blue); padding: 10px;">Cargando...</div>
             </div>
 
             <div class="status-msg" id="statusMsg"></div>
 
-            <!-- BOTÓN 1: Deja fijo el aviso en la cartelera (pantalla). BOTÓN 2: Descarga -->
+            <!-- BOTÓN 1: Manda los datos fijos a la ventana principal. BOTÓN 2: Descarga -->
             <div class="btn-container">
-                <button class="btn-action" id="btnSetFixed">1. Dejar Fijo el Aviso</button>
+                <button class="btn-action" id="btnSetFixed">1. Dejar Fijo en Pantalla</button>
                 <button class="btn-action btn-secondary" id="btnDownload">2. Descargar Estampa</button>
             </div>
         </div>
@@ -305,7 +317,7 @@
         let selectedPath = null;
         const grid = document.getElementById('gridEstampas');
 
-        // Recuperar datos guardados si existen
+        // Cargar datos guardados previamente en la memoria del navegador si existen
         if(localStorage.getItem('ventaniya_name')) document.getElementById('sponsorName').value = localStorage.getItem('ventaniya_name');
         if(localStorage.getItem('ventaniya_phone')) document.getElementById('sponsorPhone').value = localStorage.getItem('ventaniya_phone');
         if(localStorage.getItem('ventaniya_address')) document.getElementById('sponsorAddress').value = localStorage.getItem('ventaniya_address');
@@ -337,7 +349,6 @@
                         document.querySelectorAll('.estampa-card').forEach(c => c.classList.remove('selected'));
                         card.classList.add('selected');
                         selectedPath = file.name;
-                        renderCanvas();
                     });
 
                     grid.appendChild(card);
@@ -350,26 +361,30 @@
                 if (!selectedPath && imagenes.length > 0) {
                     selectedPath = imagenes[0].name;
                 }
-                renderCanvas();
+
+                // Renderizar la pantalla principal al iniciar con lo guardado
+                renderCarteleraPrincipal();
 
             } catch (error) {
                 grid.innerHTML = '<div style="color: var(--neon-pink);">Error al conectar.</div>';
             }
         }
 
-        const canvas = document.getElementById('preview-canvas');
+        const canvas = document.getElementById('cartelera-canvas');
         const ctx = canvas.getContext('2d');
 
-        function renderCanvas() {
-            if (!selectedPath) return;
+        function renderCarteleraPrincipal() {
+            // Usamos los datos guardados oficiales en localStorage para reflejar lo que está FIJO en la pantalla
+            const activeImage = localStorage.getItem('ventaniya_image') || selectedPath;
+            if (!activeImage) return;
 
             const img = new Image();
             img.crossOrigin = "anonymous";
-            img.src = selectedPath;
+            img.src = activeImage;
             
             img.onload = () => {
-                canvas.width = 600;
-                canvas.height = 600;
+                canvas.width = 800;
+                canvas.height = 800;
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -377,90 +392,86 @@
                 ctx.fillStyle = "rgba(5, 8, 20, 0.25)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Reloj y fecha
-                ctx.font = "bold 24px 'Orbitron', monospace";
+                // Reloj y fecha en pantalla principal
+                ctx.font = "bold 32px 'Orbitron', monospace";
                 ctx.fillStyle = "#00f3ff";
                 ctx.shadowColor = "#00f3ff";
                 ctx.shadowBlur = 12;
-                ctx.fillText(document.getElementById('live-time').textContent, 25, 45);
+                ctx.fillText(document.getElementById('live-time').textContent, 35, 60);
 
-                ctx.font = "14px 'Share Tech Mono', monospace";
+                ctx.font = "18px 'Share Tech Mono', monospace";
                 ctx.fillStyle = "#ffffff";
                 ctx.shadowColor = "#ffffff";
                 ctx.shadowBlur = 8;
-                ctx.fillText(document.getElementById('live-date').textContent, 25, 70);
+                ctx.fillText(document.getElementById('live-date').textContent, 35, 95);
 
                 // Sello
                 ctx.save();
-                ctx.translate(canvas.width - 75, 75);
+                ctx.translate(canvas.width - 95, 95);
                 ctx.beginPath();
-                ctx.arc(0, 0, 45, 0, Math.PI * 2);
+                ctx.arc(0, 0, 55, 0, Math.PI * 2);
                 ctx.strokeStyle = "#00f3ff";
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 4;
                 ctx.shadowColor = "#00f3ff";
-                ctx.shadowBlur = 10;
+                ctx.shadowBlur = 12;
                 ctx.stroke();
 
                 ctx.fillStyle = "#00f3ff";
-                ctx.font = "bold 8px 'Orbitron', monospace";
+                ctx.font = "bold 10px 'Orbitron', monospace";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
-                ctx.fillText("VENTANIYA", 0, -10);
+                ctx.fillText("VENTANIYA", 0, -12);
                 ctx.fillStyle = "#ffffff";
-                ctx.font = "bold 7px 'Share Tech Mono', monospace";
+                ctx.font = "bold 9px 'Share Tech Mono', monospace";
                 ctx.fillText("ATÓMICO", 0, 2);
                 ctx.fillStyle = "#ff007f";
-                ctx.font = "bold 7px 'Orbitron', monospace";
-                ctx.fillText("MDRP", 0, 14);
+                ctx.font = "bold 9px 'Orbitron', monospace";
+                ctx.fillText("MDRP", 0, 16);
                 ctx.restore();
 
-                // Recuadro de auspicio fijo en pantalla
-                const sName = document.getElementById('sponsorName').value.toUpperCase();
-                const sPhone = document.getElementById('sponsorPhone').value;
-                const sAddress = document.getElementById('sponsorAddress').value;
-                const sMsg = document.getElementById('sponsorMsg').value;
+                // Recuadro de auspicio fijo en la ventana principal
+                const sName = (localStorage.getItem('ventaniya_name') || document.getElementById('sponsorName').value).toUpperCase();
+                const sPhone = localStorage.getItem('ventaniya_phone') || document.getElementById('sponsorPhone').value;
+                const sAddress = localStorage.getItem('ventaniya_address') || document.getElementById('sponsorAddress').value;
+                const sMsg = localStorage.getItem('ventaniya_msg') || document.getElementById('sponsorMsg').value;
 
-                const boxX = 20, boxY = canvas.height - 130, boxW = 560, boxH = 100;
+                const boxX = 25, boxY = canvas.height - 170, boxW = 750, boxH = 140;
 
                 ctx.save();
                 ctx.shadowColor = "#00f3ff";
-                ctx.shadowBlur = 15;
+                ctx.shadowBlur = 18;
                 ctx.fillStyle = "rgba(5, 8, 20, 0.95)";
                 ctx.strokeStyle = "#00f3ff";
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2.5;
                 ctx.beginPath();
                 ctx.rect(boxX, boxY, boxW, boxH);
                 ctx.fill();
                 ctx.stroke();
                 ctx.restore();
 
-                let textStartX = boxX + 20;
-                ctx.font = "bold 20px 'Orbitron', monospace";
+                let textStartX = boxX + 25;
+                ctx.font = "bold 26px 'Orbitron', monospace";
                 ctx.fillStyle = "#00f3ff";
                 ctx.shadowColor = "#00f3ff";
                 ctx.shadowBlur = 10;
-                ctx.fillText(sName, textStartX, boxY + 28);
+                ctx.fillText(sName, textStartX, boxY + 38);
 
-                ctx.font = "bold 13px 'Share Tech Mono', monospace";
+                ctx.font = "bold 17px 'Share Tech Mono', monospace";
                 ctx.fillStyle = "#ffffff";
                 ctx.shadowColor = "#ffffff";
                 ctx.shadowBlur = 5;
-                ctx.fillText(sPhone, textStartX, boxY + 52);
-                ctx.fillText(sAddress, textStartX, boxY + 72);
+                ctx.fillText(sPhone, textStartX, boxY + 72);
+                ctx.fillText(sAddress, textStartX, boxY + 98);
 
-                ctx.font = "bold 13px 'Share Tech Mono', monospace";
+                ctx.font = "bold 17px 'Share Tech Mono', monospace";
                 ctx.fillStyle = "#ff007f";
                 ctx.shadowColor = "#ff007f";
                 ctx.shadowBlur = 6;
-                ctx.fillText(sMsg, textStartX, boxY + 92);
+                ctx.fillText(sMsg, textStartX, boxY + 124);
             };
         }
 
-        ['sponsorName', 'sponsorPhone', 'sponsorAddress', 'sponsorMsg'].forEach(id => {
-            document.getElementById(id).addEventListener('input', () => renderCanvas());
-        });
-
-        // BOTÓN 1: Guarda y fija de manera permanente los datos en la cartelera (sin descargar nada)
+        // BOTÓN 1: Guarda los cambios y actualiza de inmediato la PANTALLA PRINCIPAL de la cartelera
         document.getElementById('btnSetFixed').onclick = () => {
             if(!selectedPath) return;
             localStorage.setItem('ventaniya_name', document.getElementById('sponsorName').value);
@@ -469,19 +480,18 @@
             localStorage.setItem('ventaniya_msg', document.getElementById('sponsorMsg').value);
             localStorage.setItem('ventaniya_image', selectedPath);
 
-            renderCanvas();
+            renderCarteleraPrincipal();
             const msg = document.getElementById('statusMsg');
-            msg.textContent = "¡Aviso fijado en la cartelera correctamente!";
+            msg.textContent = "¡Aviso fijado en la pantalla principal!";
             setTimeout(() => { msg.textContent = ""; }, 3500);
         };
 
-        // BOTÓN 2: Es el ÚNICO que descarga la imagen final a la PC
+        // BOTÓN 2: Es el ÚNICO botón que descarga la estampa de la pantalla principal a la PC
         document.getElementById('btnDownload').onclick = () => {
-            if(!selectedPath) return;
-            renderCanvas();
+            renderCarteleraPrincipal();
             setTimeout(() => {
                 const link = document.createElement('a');
-                link.download = `Estampa-Aviso-Fijo.png`;
+                link.download = `Estampa-Cartelera-Principal.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             }, 100);
