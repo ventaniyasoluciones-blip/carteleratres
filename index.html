@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartelera Interactiva | VentaniYA</title>
+    <title>Cartelera de Repositorio | VentaniYA</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -90,14 +90,6 @@
 
         .gallery-section { display: flex; flex-direction: column; gap: 15px; }
 
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
         .section-title {
             font-family: 'Orbitron', sans-serif;
             font-size: 1.1rem;
@@ -105,43 +97,6 @@
             border-left: 4px solid var(--neon-blue);
             padding-left: 10px;
             text-shadow: 0 0 5px var(--neon-blue);
-        }
-
-        .upload-btn-container {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-        }
-
-        .btn-upload-repo {
-            background: #0b1120;
-            border: 1px solid var(--neon-blue);
-            color: var(--neon-blue);
-            font-family: 'Orbitron', sans-serif;
-            font-size: 0.75rem;
-            font-weight: bold;
-            padding: 8px 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            box-shadow: 0 0 8px rgba(0, 243, 255, 0.2);
-            transition: all 0.2s;
-            text-transform: uppercase;
-        }
-
-        .btn-upload-repo:hover {
-            background: var(--neon-blue);
-            color: #000;
-            box-shadow: 0 0 12px var(--neon-blue);
-        }
-
-        .upload-btn-container input[type="file"] {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
         }
 
         .grid-estampas {
@@ -205,7 +160,7 @@
         .form-group { display: flex; flex-direction: column; gap: 6px; }
         .form-group label { font-size: 0.85rem; color: var(--neon-blue); letter-spacing: 1px; font-weight: bold; }
         
-        .form-group input, .form-group textarea {
+        .form-group input {
             background: #000;
             border: 1px solid var(--neon-blue);
             color: var(--neon-white);
@@ -260,7 +215,7 @@
     <header>
         <div class="brand">
             <h1>VENTANIYA</h1>
-            <p>LA VÍA DEL MILISEGUNDO // CARTELERA DE ESTAMPAS</p>
+            <p>LA VÍA DEL MILISEGUNDO // CARTELERA DE REPOSITORIO</p>
         </div>
         <div class="casio-clock-container">
             <div id="live-time" class="time-display">00:00:00.000</div>
@@ -270,47 +225,41 @@
 
     <div class="main-layout">
         <div class="gallery-section">
-            <div class="section-header">
-                <div class="section-title" id="gallery-title">Colección de Estampas</div>
-                <div class="upload-btn-container">
-                    <button class="btn-upload-repo">📁 Cargar Estampas PNG</button>
-                    <!-- Permite seleccionar múltiples PNG de tu carpeta/repositorio de golpe -->
-                    <input type="file" id="repoFilesInput" accept="image/png, image/jpeg" multiple>
-                </div>
-            </div>
+            <div class="section-title" id="gallery-title">Estampas del Repositorio</div>
+            <!-- Lista fija cargada directo desde tu repositorio -->
             <div class="grid-estampas" id="gridEstampas"></div>
         </div>
 
         <div class="editor-panel">
-            <div class="editor-title" id="editor-panel-title">Avisador Específico de Estampa</div>
+            <div class="editor-title" id="editor-panel-title">Avisador de la Estampa</div>
             
             <div class="form-group">
-                <label>Logo del Auspiciante (PNG/JPG):</label>
+                <label>Logo del Auspiciante:</label>
                 <input type="file" id="sponsorLogoFile" accept="image/*">
             </div>
 
             <div class="form-group">
-                <label>Nombre del Comercio (EstampiYA de Tiempo):</label>
-                <input type="text" id="sponsorName" value="EstampiYA de Tiempo">
+                <label>Nombre del Comercio:</label>
+                <input type="text" id="sponsorName">
             </div>
 
             <div class="form-group">
                 <label>Teléfono de Contacto:</label>
-                <input type="text" id="sponsorPhone" value="">
+                <input type="text" id="sponsorPhone">
             </div>
 
             <div class="form-group">
                 <label>Dirección / Ubicación:</label>
-                <input type="text" id="sponsorAddress" value="">
+                <input type="text" id="sponsorAddress">
             </div>
 
             <div class="form-group">
                 <label>Instagram / Mensaje (IG):</label>
-                <input type="text" id="sponsorMsg" value="">
+                <input type="text" id="sponsorMsg">
             </div>
 
             <div class="form-group">
-                <label>Vista Previa Sello + Estampa:</label>
+                <label>Vista Previa:</label>
                 <div class="preview-container">
                     <canvas id="preview-canvas" width="600" height="600"></canvas>
                 </div>
@@ -338,45 +287,53 @@
         }
         setInterval(updateClock, 30);
 
-        let estampasData = [];
+        // =========================================================================
+        // AQUÍ AGREGAS LAS IMÁGENES QUE YA TIENES SUBIDAS A TU REPOSITORIO DE GITHUB
+        // =========================================================================
+        const misEstampasDelRepo = [
+            {
+                id: 1,
+                nombreArchivo: "fora.png", // <--- Pon aquí exacto el nombre de tu archivo en el repo
+                url: "fora.png",           // <--- Si está en una carpeta, pon "carpeta/fora.png"
+                hash: "repo#fora001"
+            },
+            {
+                id: 2,
+                nombreArchivo: "estampa2.png", // <--- Agrega todas las que quieras que queden fijas
+                url: "estampa2.png",
+                hash: "repo#est002"
+            }
+        ];
+
         let selectedEstampa = null;
         const grid = document.getElementById('gridEstampas');
 
-        function getStorageKey(filename) {
-            return `ventaniya_sponsor_fijo_${filename}`;
+        function getStorageKey(nombre) {
+            return `ventaniya_aviso_fijo_${nombre}`;
         }
 
-        // Carga el aviso guardado para la estampa seleccionada (o valores por defecto si es nueva)
-        function loadSponsorForSelected() {
+        function loadSponsorData() {
             if (!selectedEstampa) return;
-            const savedData = JSON.parse(localStorage.getItem(getStorageKey(selectedEstampa.name)));
-            
-            if (savedData) {
-                document.getElementById('sponsorName').value = savedData.name || "EstampiYA de Tiempo";
-                document.getElementById('sponsorPhone').value = savedData.phone || "";
-                document.getElementById('sponsorAddress').value = savedData.address || "";
-                document.getElementById('sponsorMsg').value = savedData.msg || "";
-                selectedEstampa.uploadedLogo = savedData.logo || null;
-            } else {
-                document.getElementById('sponsorName').value = selectedEstampa.defaultSponsor?.name || "EstampiYA de Tiempo";
-                document.getElementById('sponsorPhone').value = selectedEstampa.defaultSponsor?.phone || "";
-                document.getElementById('sponsorAddress').value = selectedEstampa.defaultSponsor?.address || "";
-                document.getElementById('sponsorMsg').value = selectedEstampa.defaultSponsor?.msg || "";
-                selectedEstampa.uploadedLogo = selectedEstampa.defaultSponsor?.logo || null;
-            }
+            const saved = JSON.parse(localStorage.getItem(getStorageKey(selectedEstampa.nombreArchivo)));
+
+            // Si ya tiene datos guardados los usa, sino pone un valor por defecto limpio
+            document.getElementById('sponsorName').value = saved ? saved.name : "COMERCIO AUSPICIANTE";
+            document.getElementById('sponsorPhone').value = saved ? saved.phone : "+54 9 11 0000-0000";
+            document.getElementById('sponsorAddress').value = saved ? saved.address : "Av. Principal 123";
+            document.getElementById('sponsorMsg').value = saved ? saved.msg : "@tucomercio";
+            selectedEstampa.logo = saved ? saved.logo : null;
         }
 
-        // Guarda automáticamente en localStorage cada vez que modificas el aviso
-        function saveSponsorForSelected() {
+        function saveSponsorData() {
             if (!selectedEstampa) return;
-            const sponsorData = {
+            const data = {
                 name: document.getElementById('sponsorName').value,
                 phone: document.getElementById('sponsorPhone').value,
                 address: document.getElementById('sponsorAddress').value,
                 msg: document.getElementById('sponsorMsg').value,
-                logo: selectedEstampa.uploadedLogo
+                logo: selectedEstampa.logo
             };
-            localStorage.setItem(getStorageKey(selectedEstampa.name), JSON.stringify(sponsorData));
+            localStorage.setItem(getStorageKey(selectedEstampa.nombreArchivo), JSON.stringify(data));
         }
 
         document.getElementById('sponsorLogoFile').addEventListener('change', function(e) {
@@ -384,73 +341,43 @@
             if (file && selectedEstampa) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    const img = new Image();
-                    img.onload = function() {
-                        selectedEstampa.uploadedLogo = event.target.result;
-                        saveSponsorForSelected();
-                        redrawCanvas();
-                    }
-                    img.src = event.target.result;
+                    selectedEstampa.logo = event.target.result;
+                    saveSponsorData();
+                    redrawCanvas();
                 }
                 reader.readAsDataURL(file);
             }
         });
 
-        // Selector para cargar tus estampas del repositorio/carpeta de golpe
-        document.getElementById('repoFilesInput').addEventListener('change', function(e) {
-            const files = Array.from(e.target.files);
-            if (files.length === 0) return;
-
-            let loadedCount = 0;
-            files.forEach((file, idx) => {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    const hash = "git#" + Math.random().toString(36).substring(2, 10) + idx.toString(16);
-                    estampasData.push({
-                        id: estampasData.length + 1,
-                        name: file.name,
-                        url: event.target.result,
-                        hash: hash,
-                        uploadedLogo: null
-                    });
-                    loadedCount++;
-                    if (loadedCount === files.length) {
-                        document.getElementById('gallery-title').textContent = `Colección (${estampasData.length} Estampas)`;
-                        renderGrid();
-                    }
-                }
-                reader.readAsDataURL(file);
-            });
-        });
-
-        function renderGrid() {
+        function inicializar() {
             grid.innerHTML = '';
-            estampasData.forEach((item, index) => {
+            misEstampasDelRepo.forEach((item, index) => {
                 const card = document.createElement('div');
-                card.className = `estampa-card ${selectedEstampa && selectedEstampa.name === item.name ? 'selected' : (index === 0 && !selectedEstampa ? 'selected' : '')}`;
+                card.className = `estampa-card ${index === 0 ? 'selected' : ''}`;
                 card.innerHTML = `
-                    <img class="estampa-thumb" src="${item.url}" crossorigin="anonymous">
+                    <img class="estampa-thumb" src="${item.url}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/140x110/050814/00f3ff?text=Falta+Img'">
                     <div class="estampa-info">
                         <div class="estampa-id">ESTAMPA #${String(item.id).padStart(3, '0')}</div>
-                        <div class="estampa-hash" title="${item.hash}">${item.hash}</div>
+                        <div class="estampa-hash">${item.hash}</div>
                     </div>
                 `;
-                card.onclick = () => selectEstampa(item, card);
+                card.onclick = () => {
+                    document.querySelectorAll('.estampa-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    selectedEstampa = item;
+                    document.getElementById('editor-panel-title').textContent = `Avisador: ${item.nombreArchivo}`;
+                    loadSponsorData();
+                    redrawCanvas();
+                };
                 grid.appendChild(card);
             });
-            if (estampasData.length > 0 && !selectedEstampa) {
-                selectEstampa(estampasData[0], grid.firstChild);
-            }
-        }
 
-        function selectEstampa(item, cardElement) {
-            document.querySelectorAll('.estampa-card').forEach(c => c.classList.remove('selected'));
-            if(cardElement) cardElement.classList.add('selected');
-            selectedEstampa = item;
-            
-            document.getElementById('editor-panel-title').textContent = `Avisador para: ${item.name}`;
-            loadSponsorForSelected();
-            redrawCanvas();
+            if (misEstampasDelRepo.length > 0) {
+                selectedEstampa = misEstampasDelRepo[0];
+                document.getElementById('editor-panel-title').textContent = `Avisador: ${selectedEstampa.nombreArchivo}`;
+                loadSponsorData();
+                redrawCanvas();
+            }
         }
 
         const canvas = document.getElementById('preview-canvas');
@@ -471,36 +398,33 @@
                 ctx.fillStyle = "rgba(5, 8, 20, 0.25)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // --- HORA NEÓN ---
+                // Hora Neón
                 ctx.font = "bold 24px 'Orbitron', monospace";
                 ctx.fillStyle = "#00f3ff";
                 ctx.shadowColor = "#00f3ff";
                 ctx.shadowBlur = 12;
                 ctx.fillText(document.getElementById('live-time').textContent, 25, 45);
 
-                // --- FECHA NEÓN ---
+                // Fecha Neón
                 ctx.font = "14px 'Share Tech Mono', monospace";
                 ctx.fillStyle = "#ffffff";
                 ctx.shadowColor = "#ffffff";
                 ctx.shadowBlur = 8;
                 ctx.fillText(document.getElementById('live-date').textContent, 25, 70);
 
-                // --- HASH INMUTABLE ---
+                // Hash
                 ctx.font = "11px 'Share Tech Mono', monospace";
                 ctx.fillStyle = "#94a3b8";
                 ctx.shadowBlur = 0;
                 ctx.fillText(`HASH: ${selectedEstampa.hash}`, 25, canvas.height - 25);
 
-                // --- BANNER INFERIOR DEL AUSPICIANTE ---
-                const sponsorName = document.getElementById('sponsorName').value.toUpperCase();
-                const phone = document.getElementById('sponsorPhone').value;
-                const address = document.getElementById('sponsorAddress').value;
-                const msg = document.getElementById('sponsorMsg').value;
+                // Banner Avisador
+                const sName = document.getElementById('sponsorName').value.toUpperCase();
+                const sPhone = document.getElementById('sponsorPhone').value;
+                const sAddress = document.getElementById('sponsorAddress').value;
+                const sMsg = document.getElementById('sponsorMsg').value;
 
-                const boxX = 20;
-                const boxY = canvas.height - 160;
-                const boxW = 560;
-                const boxH = 125;
+                const boxX = 20, boxY = canvas.height - 160, boxW = 560, boxH = 125;
 
                 ctx.save();
                 ctx.shadowColor = "#00f3ff";
@@ -515,9 +439,9 @@
                 ctx.restore();
 
                 let textStartX = boxX + 20;
-                if (selectedEstampa.uploadedLogo) {
+                if (selectedEstampa.logo) {
                     const logoImg = new Image();
-                    logoImg.src = selectedEstampa.uploadedLogo;
+                    logoImg.src = selectedEstampa.logo;
                     const logoSize = 85;
                     const logoX = boxX + 15;
                     const logoY = boxY + 20;
@@ -527,37 +451,32 @@
                     ctx.strokeStyle = "#00f3ff";
                     ctx.lineWidth = 1;
                     ctx.strokeRect(logoX, logoY, logoSize, logoSize);
-
                     ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
                     textStartX = boxX + 115; 
                 }
 
-                // Nombre del Comercio
                 ctx.font = "bold 21px 'Orbitron', monospace";
                 ctx.fillStyle = "#00f3ff";
                 ctx.shadowColor = "#00f3ff";
                 ctx.shadowBlur = 10;
-                ctx.fillText(sponsorName, textStartX, boxY + 30);
+                ctx.fillText(sName, textStartX, boxY + 30);
 
-                // Teléfono y Dirección
                 ctx.font = "bold 14px 'Share Tech Mono', monospace";
                 ctx.fillStyle = "#ffffff";
                 ctx.shadowColor = "#ffffff";
                 ctx.shadowBlur = 5;
-                ctx.fillText(phone, textStartX, boxY + 58);
-                ctx.fillText(address, textStartX, boxY + 80);
+                ctx.fillText(sPhone, textStartX, boxY + 58);
+                ctx.fillText(sAddress, textStartX, boxY + 80);
 
-                // Instagram / Mensaje
                 ctx.font = "bold 14px 'Share Tech Mono', monospace";
                 ctx.fillStyle = "#ff007f";
                 ctx.shadowColor = "#ff007f";
                 ctx.shadowBlur = 6;
-                ctx.fillText(msg, textStartX, boxY + 104);
+                ctx.fillText(sMsg, textStartX, boxY + 104);
 
-                // --- SELLO REDONDO ATÓMICO VENTANIYA ---
+                // Sello Atómico
                 ctx.save();
                 ctx.translate(canvas.width - 75, 75);
-                
                 ctx.beginPath();
                 ctx.arc(0, 0, 45, 0, Math.PI * 2);
                 ctx.strokeStyle = "#00f3ff";
@@ -566,34 +485,24 @@
                 ctx.shadowBlur = 10;
                 ctx.stroke();
 
-                ctx.beginPath();
-                ctx.arc(0, 0, 37, 0, Math.PI * 2);
-                ctx.strokeStyle = "#ffffff";
-                ctx.lineWidth = 1;
-                ctx.stroke();
-
                 ctx.fillStyle = "#00f3ff";
                 ctx.font = "bold 8px 'Orbitron', monospace";
                 ctx.textAlign = "center";
                 ctx.textBaseline = "middle";
                 ctx.fillText("VENTANIYA", 0, -10);
-
                 ctx.fillStyle = "#ffffff";
                 ctx.font = "bold 7px 'Share Tech Mono', monospace";
                 ctx.fillText("ATÓMICO", 0, 2);
-
                 ctx.fillStyle = "#ff007f";
                 ctx.font = "bold 7px 'Orbitron', monospace";
                 ctx.fillText("MDRP", 0, 14);
-
                 ctx.restore();
             };
         }
 
-        // Cada vez que escribes en los inputs del avisador, se guarda al instante para esa estampa
         ['sponsorName', 'sponsorPhone', 'sponsorAddress', 'sponsorMsg'].forEach(id => {
             document.getElementById(id).addEventListener('input', () => {
-                saveSponsorForSelected();
+                saveSponsorData();
                 redrawCanvas();
             });
         });
@@ -605,6 +514,8 @@
             link.href = canvas.toDataURL('image/png');
             link.click();
         };
+
+        inicializar();
     </script>
 </body>
 </html>
