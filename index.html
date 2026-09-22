@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartelera de Repositorio | VentaniYA</title>
+    <title>Cartelera Dinámica | VentaniYA</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -90,6 +90,14 @@
 
         .gallery-section { display: flex; flex-direction: column; gap: 15px; }
 
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
         .section-title {
             font-family: 'Orbitron', sans-serif;
             font-size: 1.1rem;
@@ -99,11 +107,45 @@
             text-shadow: 0 0 5px var(--neon-blue);
         }
 
+        .add-box {
+            display: flex;
+            gap: 8px;
+            background: var(--panel-bg);
+            padding: 10px;
+            border: 1px solid var(--neon-blue);
+            border-radius: 6px;
+        }
+
+        .add-box input {
+            background: #000;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-white);
+            padding: 6px 10px;
+            font-family: 'Share Tech Mono', monospace;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            flex: 1;
+        }
+
+        .btn-add {
+            background: var(--neon-blue);
+            color: #000;
+            border: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .btn-add:hover { background: #fff; box-shadow: 0 0 8px #fff; }
+
         .grid-estampas {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
             gap: 12px;
-            max-height: 70vh;
+            max-height: 65vh;
             overflow-y: auto;
             padding-right: 5px;
         }
@@ -118,6 +160,7 @@
             overflow: hidden;
             cursor: pointer;
             transition: all 0.2s ease;
+            position: relative;
         }
 
         .estampa-card:hover {
@@ -131,10 +174,27 @@
             box-shadow: 0 0 15px var(--neon-pink);
         }
 
-        .estampa-thumb { width: 100%; height: 110px; object-fit: cover; background: #000; }
-        .estampa-info { padding: 6px; font-size: 0.75rem; }
-        .estampa-id { color: var(--neon-blue); font-weight: bold; }
-        .estampa-hash { color: #94a3b8; font-size: 0.65rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .estampa-thumb { width: 100%; height: 100px; object-fit: cover; background: #000; }
+        .estampa-info { padding: 6px; font-size: 0.75px; }
+        .estampa-name { color: var(--neon-blue); font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 0.8rem; }
+        
+        .btn-delete-item {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(255, 0, 127, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 10px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .estampa-card:hover .btn-delete-item { display: flex; }
 
         .editor-panel {
             background: var(--panel-bg);
@@ -215,7 +275,7 @@
     <header>
         <div class="brand">
             <h1>VENTANIYA</h1>
-            <p>LA VÍA DEL MILISEGUNDO // CARTELERA DE REPOSITORIO</p>
+            <p>LA VÍA DEL MILISEGUNDO // CARTELERA DINÁMICA</p>
         </div>
         <div class="casio-clock-container">
             <div id="live-time" class="time-display">00:00:00.000</div>
@@ -225,8 +285,17 @@
 
     <div class="main-layout">
         <div class="gallery-section">
-            <div class="section-title" id="gallery-title">Estampas del Repositorio</div>
-            <!-- Lista fija cargada directo desde tu repositorio -->
+            <div class="section-header">
+                <div class="section-title">Añadir Estampa por Nombre o Ruta</div>
+            </div>
+            
+            <!-- Panel para escribir el nombre de la imagen que subiste a GitHub (ej: "mifoto.png" o "imagenes/foto1.png") -->
+            <div class="add-box">
+                <input type="text" id="nuevaRutaInput" placeholder="Ej: micartel.png o carpeta/imagen.png">
+                <button class="btn-add" id="btnAddEstampa">+ Registrar</button>
+            </div>
+
+            <div class="section-title" style="margin-top: 10px;">Estampas Registradas</div>
             <div class="grid-estampas" id="gridEstampas"></div>
         </div>
 
@@ -287,36 +356,26 @@
         }
         setInterval(updateClock, 30);
 
-        // =========================================================================
-        // AQUÍ AGREGAS LAS IMÁGENES QUE YA TIENES SUBIDAS A TU REPOSITORIO DE GITHUB
-        // =========================================================================
-        const misEstampasDelRepo = [
-            {
-                id: 1,
-                nombreArchivo: "fora.png", // <--- Pon aquí exacto el nombre de tu archivo en el repo
-                url: "fora.png",           // <--- Si está en una carpeta, pon "carpeta/fora.png"
-                hash: "repo#fora001"
-            },
-            {
-                id: 2,
-                nombreArchivo: "estampa2.png", // <--- Agrega todas las que quieras que queden fijas
-                url: "estampa2.png",
-                hash: "repo#est002"
-            }
+        // Se cargan desde localStorage o arranca con un array vacío para que pongas lo que quieras
+        let listaEstampas = JSON.parse(localStorage.getItem('ventaniya_lista_paths')) || [
+            { id: 1, path: "fora.png" } // Puedes borrar esto o cambiarlo desde la interfaz
         ];
 
         let selectedEstampa = null;
         const grid = document.getElementById('gridEstampas');
 
-        function getStorageKey(nombre) {
-            return `ventaniya_aviso_fijo_${nombre}`;
+        function guardarLista() {
+            localStorage.setItem('ventaniya_lista_paths', JSON.stringify(listaEstampas));
+        }
+
+        function getStorageKey(path) {
+            return `ventaniya_anuncio_fijo_${path}`;
         }
 
         function loadSponsorData() {
             if (!selectedEstampa) return;
-            const saved = JSON.parse(localStorage.getItem(getStorageKey(selectedEstampa.nombreArchivo)));
+            const saved = JSON.parse(localStorage.getItem(getStorageKey(selectedEstampa.path)));
 
-            // Si ya tiene datos guardados los usa, sino pone un valor por defecto limpio
             document.getElementById('sponsorName').value = saved ? saved.name : "COMERCIO AUSPICIANTE";
             document.getElementById('sponsorPhone').value = saved ? saved.phone : "+54 9 11 0000-0000";
             document.getElementById('sponsorAddress').value = saved ? saved.address : "Av. Principal 123";
@@ -333,7 +392,7 @@
                 msg: document.getElementById('sponsorMsg').value,
                 logo: selectedEstampa.logo
             };
-            localStorage.setItem(getStorageKey(selectedEstampa.nombreArchivo), JSON.stringify(data));
+            localStorage.setItem(getStorageKey(selectedEstampa.path), JSON.stringify(data));
         }
 
         document.getElementById('sponsorLogoFile').addEventListener('change', function(e) {
@@ -349,35 +408,62 @@
             }
         });
 
-        function inicializar() {
+        document.getElementById('btnAddEstampa').onclick = () => {
+            const inputVal = document.getElementById('nuevaRutaInput').value.trim();
+            if (!inputVal) return;
+
+            const nuevoId = listaEstampas.length > 0 ? listaEstampas[listaEstampas.length - 1].id + 1 : 1;
+            listaEstampas.push({ id: nuevoId, path: inputVal });
+            guardarLista();
+            document.getElementById('nuevaRutaInput').value = '';
+            renderGrid();
+            
+            // Selecciona automáticamente la recién agregada
+            selectEstampa(listaEstampas[listaEstampas.length - 1]);
+        };
+
+        function renderGrid() {
             grid.innerHTML = '';
-            misEstampasDelRepo.forEach((item, index) => {
+            listaEstampas.forEach((item) => {
                 const card = document.createElement('div');
-                card.className = `estampa-card ${index === 0 ? 'selected' : ''}`;
+                card.className = `estampa-card ${selectedEstampa && selectedEstampa.path === item.path ? 'selected' : ''}`;
                 card.innerHTML = `
-                    <img class="estampa-thumb" src="${item.url}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/140x110/050814/00f3ff?text=Falta+Img'">
+                    <button class="btn-delete-item" title="Eliminar estampa">&times;</button>
+                    <img class="estampa-thumb" src="${item.path}" crossorigin="anonymous" onerror="this.src='https://via.placeholder.com/140x100/050814/00f3ff?text=Verificar+Nombre'">
                     <div class="estampa-info">
-                        <div class="estampa-id">ESTAMPA #${String(item.id).padStart(3, '0')}</div>
-                        <div class="estampa-hash">${item.hash}</div>
+                        <div class="estampa-name" title="${item.path}">${item.path}</div>
                     </div>
                 `;
-                card.onclick = () => {
-                    document.querySelectorAll('.estampa-card').forEach(c => c.classList.remove('selected'));
-                    card.classList.add('selected');
-                    selectedEstampa = item;
-                    document.getElementById('editor-panel-title').textContent = `Avisador: ${item.nombreArchivo}`;
-                    loadSponsorData();
-                    redrawCanvas();
+
+                // Botón para eliminar de la lista
+                card.querySelector('.btn-delete-item').onclick = (e) => {
+                    e.stopPropagation();
+                    listaEstampas = listaEstampas.filter(el => el.path !== item.path);
+                    guardarLista();
+                    renderGrid();
+                    if(selectedEstampa && selectedEstampa.path === item.path) {
+                        selectedEstampa = listaEstampas.length > 0 ? listaEstampas[0] : null;
+                        if(selectedEstampa) { loadSponsorData(); redrawCanvas(); }
+                    }
                 };
+
+                card.onclick = () => selectEstampa(item);
                 grid.appendChild(card);
             });
 
-            if (misEstampasDelRepo.length > 0) {
-                selectedEstampa = misEstampasDelRepo[0];
-                document.getElementById('editor-panel-title').textContent = `Avisador: ${selectedEstampa.nombreArchivo}`;
-                loadSponsorData();
-                redrawCanvas();
+            if (listaEstampas.length > 0 && !selectedEstampa) {
+                selectEstampa(listaEstampas[0]);
             }
+        }
+
+        function selectEstampa(item) {
+            selectedEstampa = item;
+            document.querySelectorAll('.estampa-card').forEach(c => {
+                c.classList.toggle('selected', c.querySelector('.estampa-name').textContent === item.path);
+            });
+            document.getElementById('editor-panel-title').textContent = `Avisador: ${item.path}`;
+            loadSponsorData();
+            redrawCanvas();
         }
 
         const canvas = document.getElementById('preview-canvas');
@@ -388,11 +474,13 @@
 
             const img = new Image();
             img.crossOrigin = "anonymous";
-            img.src = selectedEstampa.url;
+            img.src = selectedEstampa.path;
+            
             img.onload = () => {
                 canvas.width = 600;
                 canvas.height = 600;
 
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
                 ctx.fillStyle = "rgba(5, 8, 20, 0.25)";
@@ -411,12 +499,6 @@
                 ctx.shadowColor = "#ffffff";
                 ctx.shadowBlur = 8;
                 ctx.fillText(document.getElementById('live-date').textContent, 25, 70);
-
-                // Hash
-                ctx.font = "11px 'Share Tech Mono', monospace";
-                ctx.fillStyle = "#94a3b8";
-                ctx.shadowBlur = 0;
-                ctx.fillText(`HASH: ${selectedEstampa.hash}`, 25, canvas.height - 25);
 
                 // Banner Avisador
                 const sName = document.getElementById('sponsorName').value.toUpperCase();
@@ -442,16 +524,18 @@
                 if (selectedEstampa.logo) {
                     const logoImg = new Image();
                     logoImg.src = selectedEstampa.logo;
-                    const logoSize = 85;
-                    const logoX = boxX + 15;
-                    const logoY = boxY + 20;
-                    
-                    ctx.fillStyle = "#000";
-                    ctx.fillRect(logoX, logoY, logoSize, logoSize);
-                    ctx.strokeStyle = "#00f3ff";
-                    ctx.lineWidth = 1;
-                    ctx.strokeRect(logoX, logoY, logoSize, logoSize);
-                    ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+                    logoImg.onload = () => {
+                        const logoSize = 85;
+                        const logoX = boxX + 15;
+                        const logoY = boxY + 20;
+                        
+                        ctx.fillStyle = "#000";
+                        ctx.fillRect(logoX, logoY, logoSize, logoSize);
+                        ctx.strokeStyle = "#00f3ff";
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(logoX, logoY, logoSize, logoSize);
+                        ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+                    }
                     textStartX = boxX + 115; 
                 }
 
@@ -510,12 +594,12 @@
         document.getElementById('btnDownload').onclick = () => {
             if(!selectedEstampa) return;
             const link = document.createElement('a');
-            link.download = `Estampa-${selectedEstampa.id}-VentaniYA.png`;
+            link.download = `Estampa-Sellada-VentaniYA.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         };
 
-        inicializar();
+        renderGrid();
     </script>
 </body>
 </html>
