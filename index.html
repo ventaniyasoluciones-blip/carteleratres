@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartelera Interactiva | La Vía del Milisegundo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-white: #ffffff;
+            --neon-pink: #ff007f;
+            --bg-dark: #050814;
+            --panel-bg: #0b1120;
+            --border-glow: 0 0 10px rgba(0, 243, 255, 0.4);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--neon-white);
+            font-family: 'Share Tech Mono', monospace;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: linear-gradient(180deg, #0a1128 0%, #050814 100%);
+            border-bottom: 2px solid var(--neon-blue);
+            box-shadow: var(--border-glow);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .brand h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 8px var(--neon-blue);
+            letter-spacing: 2px;
+        }
+
+        .brand p { font-size: 0.85rem; color: #8ab4f8; letter-spacing: 1px; }
+
+        .casio-clock-container {
+            background: #000;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3) inset, 0 0 10px var(--neon-blue);
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-align: right;
+        }
+
+        .time-display {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.6rem;
+            color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+            letter-spacing: 2px;
+        }
+
+        .date-display {
+            font-size: 0.85rem;
+            color: var(--neon-white);
+            text-shadow: 0 0 8px var(--neon-white);
+            letter-spacing: 1px;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            flex: 1;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout { grid-template-columns: 1fr; }
+        }
+
+        .gallery-section { display: flex; flex-direction: column; gap: 15px; }
+
+        .section-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            color: var(--neon-blue);
+            border-left: 4px solid var(--neon-blue);
+            padding-left: 10px;
+            text-shadow: 0 0 5px var(--neon-blue);
+        }
+
+        .grid-estampas {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 12px;
+            max-height: 75vh;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .grid-estampas::-webkit-scrollbar { width: 6px; }
+        .grid-estampas::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 3px; }
+
+        .estampa-card {
+            background: var(--panel-bg);
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .estampa-card:hover {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 12px rgba(0, 243, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .estampa-card.selected {
+            border-color: var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
+        }
+
+        .estampa-thumb { width: 100%; height: 110px; object-fit: cover; background: #000; }
+        .estampa-info { padding: 6px; font-size: 0.75rem; }
+        .estampa-id { color: var(--neon-blue); font-weight: bold; }
+        .estampa-hash { color: #94a3b8; font-size: 0.65rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        .editor-panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--neon-blue);
+            box-shadow: var(--border-glow);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            height: fit-content;
+        }
+
+        .editor-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            color: var(--neon-pink);
+            text-shadow: 0 0 5px var(--neon-pink);
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 8px;
+        }
+
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 0.85rem; color: var(--neon-blue); letter-spacing: 1px; font-weight: bold; }
+        
+        .form-group input, .form-group textarea {
+            background: #000;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-white);
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.05rem;
+        }
+
+        .form-group input[type="file"] {
+            padding: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            border-color: var(--neon-pink);
+        }
+
+        .preview-container {
+            width: 100%;
+            background: #000;
+            border: 1px dashed var(--neon-blue);
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            min-height: 180px;
+        }
+
+        #preview-canvas { max-width: 100%; height: auto; display: block; }
+
+        .btn-action {
+            background: linear-gradient(90deg, #00f3ff, #0077ff);
+            color: #000;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            border: none;
+            padding: 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn-action:hover { background: #fff; color: #000; box-shadow: 0 0 15px #fff; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <h1>VENTANIYA</h1>
+            <p>LA VÍA DEL MILISEGUNDO // REPOSITORIO DIRECTO</p>
+        </div>
+        <div class="casio-clock-container">
+            <div id="live-time" class="time-display">00:00:00.000</div>
+            <div id="live-date" class="date-display">00.XXX.0000</div>
+        </div>
+    </header>
+
+    <div class="main-layout">
+        <div class="gallery-section">
+            <div class="section-title" id="gallery-title">Colección de Estampas (Raíz del Repositorio)</div>
+            <div class="grid-estampas" id="gridEstampas"></div>
+        </div>
+
+        <div class="editor-panel">
+            <div class="editor-title" id="editor-panel-title">Avisador Específico de Estampa</div>
+            
+            <div class="form-group">
+                <label>Logo del Auspiciante (PNG/JPG):</label>
+                <input type="file" id="sponsorLogoFile" accept="image/*">
+            </div>
+
+            <div class="form-group">
+                <label>Nombre del Comercio (EstampiYA de Tiempo):</label>
+                <input type="text" id="sponsorName" value="EstampiYA de Tiempo">
+            </div>
+
+            <div class="form-group">
+                <label>Teléfono de Contacto:</label>
+                <input type="text" id="sponsorPhone" value="">
+            </div>
+
+            <div class="form-group">
+                <label>Dirección / Ubicación:</label>
+                <input type="text" id="sponsorAddress" value="">
+            </div>
+
+            <div class="form-group">
+                <label>Instagram / Mensaje (IG):</label>
+                <input type="text" id="sponsorMsg" value="">
+            </div>
+
+            <div class="form-group">
+                <label>Vista Previa Sello + Estampa:</label>
+                <div class="preview-container">
+                    <canvas id="preview-canvas" width="600" height="600"></canvas>
+                </div>
+            </div>
+
+            <button class="btn-action" id="btnDownload">Descargar Estampa Sellada</button>
+        </div>
+    </div>
+
+    <script>
+        const mesesShort = ["ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SET", "OCT", "NOV", "DIC"];
+
+        function updateClock() {
+            const now = new Date();
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            const s = String(now.getSeconds()).padStart(2, '0');
+            const ms = String(now.getMilliseconds()).padStart(3, '0');
+            document.getElementById('live-time').textContent = `${h}:${m}:${s}.${ms}`;
+
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = mesesShort[now.getMonth()];
+            const year = now.getFullYear();
+            document.getElementById('live-date').textContent = `${day}.${month}.${year}`;
+        }
+        setInterval(updateClock, 30);
+
+        let estampasData = [];
+        let selectedEstampa = null;
+        const grid = document.getElementById('gridEstampas');
+
+        // Función para obtener la clave de almacenamiento única por estampa
+        function getStorageKey(estampaName) {
+            return `ventaniya_sponsor_${estampaName}`;
+        }
+
+        // Cargar los datos del avisador guardados para la estampa seleccionada
+        function loadSponsorForSelected() {
+            if (!selectedEstampa) return;
+            const savedData = JSON.parse(localStorage.getItem(getStorageKey(selectedEstampa.name)));
+            
+            if (savedData) {
+                document.getElementById('sponsorName').value = savedData.name || "EstampiYA de Tiempo";
+                document.getElementById('sponsorPhone').value = savedData.phone || "";
+                document.getElementById('sponsorAddress').value = savedData.address || "";
+                document.getElementById('sponsorMsg').value = savedData.msg || "";
+                selectedEstampa.uploadedLogo = savedData.logo || null;
+            } else {
+                // Valores por defecto predeterminados cuando una estampa es nueva en el repositorio
+                document.getElementById('sponsorName').value = "EstampiYA de Tiempo";
+                document.getElementById('sponsorPhone').value = "";
+                document.getElementById('sponsorAddress').value = "";
+                document.getElementById('sponsorMsg').value = "";
+                selectedEstampa.uploadedLogo = null;
+            }
+        }
+
+        // Guardar automáticamente los datos actuales asociados a la estampa activa
+        function saveSponsorForSelected() {
+            if (!selectedEstampa) return;
+            const sponsorData = {
+                name: document.getElementById('sponsorName').value,
+                phone: document.getElementById('sponsorPhone').value,
+                address: document.getElementById('sponsorAddress').value,
+                msg: document.getElementById('sponsorMsg').value,
+                logo: selectedEstampa.uploadedLogo
+            };
+            localStorage.setItem(getStorageKey(selectedEstampa.name), JSON.stringify(sponsorData));
+        }
+
+        // Manejar subida del logo específico para esta estampa
+        document.getElementById('sponsorLogoFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && selectedEstampa) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        selectedEstampa.uploadedLogo = event.target.result;
+                        saveSponsorForSelected();
+                        redrawCanvas();
+                    }
+                    img.src = event.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        async function cargarImagenesDirectas() {
+            try {
+                const hostParts = window.location.hostname.split('.');
+                const repoOwner = hostParts[0];
+                const pathParts = window.location.pathname.split('/').filter(Boolean);
+                const repoName = pathParts.length > 0 ? pathParts[0] : '';
+
+                let files = [];
+                if (repoName) {
+                    const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/`);
+                    const data = await response.json();
+                    if (Array.isArray(data)) {
+                        files = data.filter(file => file.name.toLowerCase().endsWith('.png'));
+                    }
+                }
+
+                if (files.length === 0) {
+                    files = [{ name: "fora.png", download_url: "fora.png" }];
+                }
+
+                estampasData = files.map((file, index) => {
+                    const hash = "git#" + Math.random().toString(36).substring(2, 10) + index.toString(16);
+                    return {
+                        id: index + 1,
+                        name: file.name,
+                        url: file.download_url || file.name,
+                        hash: hash,
+                        uploadedLogo: null
+                    };
+                });
+
+                document.getElementById('gallery-title').textContent = `Colección Directa (${estampasData.length} Estampas en Raíz)`;
+                renderGrid();
+
+            } catch (error) {
+                estampasData = [{ id: 1, name: "fora.png", url: "fora.png", hash: "git#fallback01", uploadedLogo: null }];
+                renderGrid();
+            }
+        }
+
+        function renderGrid() {
+            grid.innerHTML = '';
+            estampasData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = `estampa-card ${index === 0 ? 'selected' : ''}`;
+                card.innerHTML = `
+                    <img class="estampa-thumb" src="${item.url}" crossorigin="anonymous">
+                    <div class="estampa-info">
+                        <div class="estampa-id">ESTAMPA #${String(item.id).padStart(3, '0')}</div>
+                        <div class="estampa-hash" title="${item.hash}">${item.hash}</div>
+                    </div>
+                `;
+                card.onclick = () => selectEstampa(item, card);
+                grid.appendChild(card);
+            });
+            if (estampasData.length > 0) {
+                selectEstampa(estampasData[0], grid.firstChild);
+            }
+        }
+
+        function selectEstampa(item, cardElement) {
+            document.querySelectorAll('.estampa-card').forEach(c => c.classList.remove('selected'));
+            cardElement.classList.add('selected');
+            selectedEstampa = item;
+            
+            // Actualizar título del panel con el nombre del archivo de la estampa seleccionada
+            document.getElementById('editor-panel-title').textContent = `Avisador para: ${item.name}`;
+            
+            // Cargar los datos guardados previamente para esta estampa específica
+            loadSponsorForSelected();
+            redrawCanvas();
+        }
+
+        const canvas = document.getElementById('preview-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function redrawCanvas() {
+            if (!selectedEstampa) return;
+
+            const img = new Image();
+            img.crossOrigin = "anonymous";
+            img.src = selectedEstampa.url;
+            img.onload = () => {
+                canvas.width = 600;
+                canvas.height = 600;
+
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = "rgba(5, 8, 20, 0.25)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // --- HORA NEÓN ---
+                ctx.font = "bold 24px 'Orbitron', monospace";
+                ctx.fillStyle = "#00f3ff";
+                ctx.shadowColor = "#00f3ff";
+                ctx.shadowBlur = 12;
+                ctx.fillText(document.getElementById('live-time').textContent, 25, 45);
+
+                // --- FECHA NEÓN ---
+                ctx.font = "14px 'Share Tech Mono', monospace";
+                ctx.fillStyle = "#ffffff";
+                ctx.shadowColor = "#ffffff";
+                ctx.shadowBlur = 8;
+                ctx.fillText(document.getElementById('live-date').textContent, 25, 70);
+
+                // --- HASH INMUTABLE ---
+                ctx.font = "11px 'Share Tech Mono', monospace";
+                ctx.fillStyle = "#94a3b8";
+                ctx.shadowBlur = 0;
+                ctx.fillText(`HASH: ${selectedEstampa.hash}`, 25, canvas.height - 25);
+
+                // --- BANNER INFERIOR DEL AUSPICIANTE ESPECÍFICO ---
+                const sponsorName = document.getElementById('sponsorName').value.toUpperCase();
+                const phone = document.getElementById('sponsorPhone').value;
+                const address = document.getElementById('sponsorAddress').value;
+                const msg = document.getElementById('sponsorMsg').value;
+
+                const boxX = 20;
+                const boxY = canvas.height - 160;
+                const boxW = 560;
+                const boxH = 125;
+
+                ctx.save();
+                ctx.shadowColor = "#00f3ff";
+                ctx.shadowBlur = 15;
+                ctx.fillStyle = "rgba(5, 8, 20, 0.92)";
+                ctx.strokeStyle = "#00f3ff";
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.rect(boxX, boxY, boxW, boxH);
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+
+                let textStartX = boxX + 20;
+                if (selectedEstampa.uploadedLogo) {
+                    const logoImg = new Image();
+                    logoImg.src = selectedEstampa.uploadedLogo;
+                    const logoSize = 85;
+                    const logoX = boxX + 15;
+                    const logoY = boxY + 20;
+                    
+                    ctx.fillStyle = "#000";
+                    ctx.fillRect(logoX, logoY, logoSize, logoSize);
+                    ctx.strokeStyle = "#00f3ff";
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(logoX, logoY, logoSize, logoSize);
+
+                    ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+                    textStartX = boxX + 115; 
+                }
+
+                // Nombre del Comercio (EstampiYA de Tiempo)
+                ctx.font = "bold 21px 'Orbitron', monospace";
+                ctx.fillStyle = "#00f3ff";
+                ctx.shadowColor = "#00f3ff";
+                ctx.shadowBlur = 10;
+                ctx.fillText(sponsorName, textStartX, boxY + 30);
+
+                // Teléfono y Dirección
+                ctx.font = "bold 14px 'Share Tech Mono', monospace";
+                ctx.fillStyle = "#ffffff";
+                ctx.shadowColor = "#ffffff";
+                ctx.shadowBlur = 5;
+                ctx.fillText(phone, textStartX, boxY + 58);
+                ctx.fillText(address, textStartX, boxY + 80);
+
+                // Instagram / Mensaje
+                ctx.font = "bold 14px 'Share Tech Mono', monospace";
+                ctx.fillStyle = "#ff007f";
+                ctx.shadowColor = "#ff007f";
+                ctx.shadowBlur = 6;
+                ctx.fillText(msg, textStartX, boxY + 104);
+
+                // --- SELLO REDONDO ATÓMICO VENTANIYA ---
+                ctx.save();
+                ctx.translate(canvas.width - 75, 75);
+                
+                ctx.beginPath();
+                ctx.arc(0, 0, 45, 0, Math.PI * 2);
+                ctx.strokeStyle = "#00f3ff";
+                ctx.lineWidth = 3;
+                ctx.shadowColor = "#00f3ff";
+                ctx.shadowBlur = 10;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(0, 0, 37, 0, Math.PI * 2);
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.fillStyle = "#00f3ff";
+                ctx.font = "bold 8px 'Orbitron', monospace";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText("VENTANIYA", 0, -10);
+
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 7px 'Share Tech Mono', monospace";
+                ctx.fillText("ATÓMICO", 0, 2);
+
+                ctx.fillStyle = "#ff007f";
+                ctx.font = "bold 7px 'Orbitron', monospace";
+                ctx.fillText("MDRP", 0, 14);
+
+                ctx.restore();
+            };
+        }
+
+        // Detectar cambios en los campos y guardarlos de inmediato de forma exclusiva para esta estampa
+        ['sponsorName', 'sponsorPhone', 'sponsorAddress', 'sponsorMsg'].forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                saveSponsorForSelected();
+                redrawCanvas();
+            });
+        });
+
+        document.getElementById('btnDownload').onclick = () => {
+            const link = document.createElement('a');
+            link.download = `Estampa-${selectedEstampa.id}-VentaniYA.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
+
+        cargarImagenesDirectas();
+    </script>
+</body>
+</html>
