@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartelera Automática | VentaniYA</title>
+    <title>Cartelera Automática con Auspicio Fijo | VentaniYA</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -205,7 +205,7 @@
     <header>
         <div class="brand">
             <h1>VENTANIYA</h1>
-            <p>CARTELERA AUTOMÁTICA DE REPOSITORIO</p>
+            <p>CARTELERA AUTOMÁTICA CON AUSPICIO FIJO</p>
         </div>
         <div class="casio-clock-container">
             <div id="live-time" class="time-display">00:00:00.000</div>
@@ -215,14 +215,14 @@
 
     <div class="main-layout">
         <div class="gallery-section">
-            <div class="section-title">Estampas del Repositorio (Carga Automática)</div>
+            <div class="section-title">Estampas Automáticas del Repositorio</div>
             <div class="grid-estampas" id="gridEstampas">
                 <div style="color: var(--neon-blue); padding: 10px;">Escaneando repositorio...</div>
             </div>
         </div>
 
         <div class="editor-panel">
-            <div class="editor-title">Aviso Publicitario Fijo (Editable)</div>
+            <div class="editor-title">Aviso Fijo del Avisador (Quemado en Imagen)</div>
             
             <div class="form-group">
                 <label>Nombre del Comercio:</label>
@@ -245,13 +245,13 @@
             </div>
 
             <div class="form-group">
-                <label>Vista Previa en Tiempo Real:</label>
+                <label>Vista Previa (Con el aviso ya fijo):</label>
                 <div class="preview-container">
                     <canvas id="preview-canvas" width="600" height="600"></canvas>
                 </div>
             </div>
 
-            <button class="btn-action" id="btnDownload">Descargar Estampa con Aviso</button>
+            <button class="btn-action" id="btnDownload">Descargar Estampa con Auspicio Fijo</button>
         </div>
     </div>
 
@@ -276,13 +276,11 @@
         let selectedPath = null;
         const grid = document.getElementById('gridEstampas');
 
-        // Lee automáticamente la API pública de GitHub de tu repositorio "carteleratres"
         async function cargarRepositorioAutomatico() {
             try {
                 const response = await fetch('https://api.github.com/repos/ventaniyasoluciones-blip/carteleratres/contents');
                 const files = await response.json();
                 
-                // Filtra solo imágenes (.png, .jpg, .jpeg)
                 const imagenes = files.filter(file => file.type === 'file' && /\.(png|jpg|jpeg)$/i.test(file.name));
 
                 grid.innerHTML = '';
@@ -310,7 +308,6 @@
 
                     grid.appendChild(card);
 
-                    // Selecciona la primera por defecto
                     if (index === 0) {
                         selectedPath = file.name;
                         redrawCanvas();
@@ -337,12 +334,14 @@
                 canvas.width = 600;
                 canvas.height = 600;
 
+                // 1. Dibuja la estampa base
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
                 ctx.fillStyle = "rgba(5, 8, 20, 0.25)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+                // 2. Dibuja hora y fecha en pantalla
                 ctx.font = "bold 24px 'Orbitron', monospace";
                 ctx.fillStyle = "#00f3ff";
                 ctx.shadowColor = "#00f3ff";
@@ -355,6 +354,7 @@
                 ctx.shadowBlur = 8;
                 ctx.fillText(document.getElementById('live-date').textContent, 25, 70);
 
+                // 3. QUEMA EL AVISO DEL AUSPICIANTE FIJO ABAJO EN LA IMAGEN
                 const sName = document.getElementById('sponsorName').value.toUpperCase();
                 const sPhone = document.getElementById('sponsorPhone').value;
                 const sAddress = document.getElementById('sponsorAddress').value;
@@ -365,7 +365,7 @@
                 ctx.save();
                 ctx.shadowColor = "#00f3ff";
                 ctx.shadowBlur = 15;
-                ctx.fillStyle = "rgba(5, 8, 20, 0.92)";
+                ctx.fillStyle = "rgba(5, 8, 20, 0.95)";
                 ctx.strokeStyle = "#00f3ff";
                 ctx.lineWidth = 2;
                 ctx.beginPath();
@@ -395,6 +395,7 @@
                 ctx.shadowBlur = 6;
                 ctx.fillText(sMsg, textStartX, boxY + 92);
 
+                // Sello decorativo de VentaniYa
                 ctx.save();
                 ctx.translate(canvas.width - 75, 75);
                 ctx.beginPath();
@@ -420,19 +421,20 @@
             };
         }
 
+        // Si cambias los datos del input, se actualizan de inmediato en el canvas
         ['sponsorName', 'sponsorPhone', 'sponsorAddress', 'sponsorMsg'].forEach(id => {
             document.getElementById(id).addEventListener('input', redrawCanvas);
         });
 
+        // Al hacer clic, descarga la estampa con el aviso fijo grabado en el archivo PNG
         document.getElementById('btnDownload').onclick = () => {
             if(!selectedPath) return;
             const link = document.createElement('a');
-            link.download = `Estampa-VentaniYA.png`;
+            link.download = `Estampa-Auspicio-VentaniYA.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         };
 
-        // Ejecutar carga automática al abrir la página
         cargarRepositorioAutomatico();
     </script>
 </body>
