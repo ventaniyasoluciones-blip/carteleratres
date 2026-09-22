@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartelera VentaniYA - Visor Principal</title>
+    <title>Cartelera VentaniYA - Fijado Real</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -249,7 +249,7 @@
     </header>
 
     <div class="main-layout">
-        <!-- PANTALLA / VENTANA PRINCIPAL DE LA CARTELERA -->
+        <!-- VENTANA PRINCIPAL DE LA CARTELERA -->
         <div class="display-section">
             <div class="section-title" style="align-self: flex-start;">Ventana de Cartelera en Vivo</div>
             <div class="cartelera-principal-container">
@@ -288,7 +288,7 @@
 
             <div class="status-msg" id="statusMsg"></div>
 
-            <!-- BOTÓN 1: Manda los datos fijos a la ventana principal. BOTÓN 2: Descarga -->
+            <!-- BOTÓN 1: Deja fijo el aviso en pantalla. BOTÓN 2: Descarga -->
             <div class="btn-container">
                 <button class="btn-action" id="btnSetFixed">1. Dejar Fijo en Pantalla</button>
                 <button class="btn-action btn-secondary" id="btnDownload">2. Descargar Estampa</button>
@@ -317,7 +317,7 @@
         let selectedPath = null;
         const grid = document.getElementById('gridEstampas');
 
-        // Cargar datos guardados previamente en la memoria del navegador si existen
+        // Cargar inputs con lo que ya estaba grabado en memoria al abrir la página
         if(localStorage.getItem('ventaniya_name')) document.getElementById('sponsorName').value = localStorage.getItem('ventaniya_name');
         if(localStorage.getItem('ventaniya_phone')) document.getElementById('sponsorPhone').value = localStorage.getItem('ventaniya_phone');
         if(localStorage.getItem('ventaniya_address')) document.getElementById('sponsorAddress').value = localStorage.getItem('ventaniya_address');
@@ -362,7 +362,7 @@
                     selectedPath = imagenes[0].name;
                 }
 
-                // Renderizar la pantalla principal al iniciar con lo guardado
+                // Renderizar la pantalla principal usando estrictamente lo guardado fijo
                 renderCarteleraPrincipal();
 
             } catch (error) {
@@ -374,7 +374,7 @@
         const ctx = canvas.getContext('2d');
 
         function renderCarteleraPrincipal() {
-            // Usamos los datos guardados oficiales en localStorage para reflejar lo que está FIJO en la pantalla
+            // Lee únicamente los valores guardados en localStorage (lo que está fijo)
             const activeImage = localStorage.getItem('ventaniya_image') || selectedPath;
             if (!activeImage) return;
 
@@ -392,7 +392,7 @@
                 ctx.fillStyle = "rgba(5, 8, 20, 0.25)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // Reloj y fecha en pantalla principal
+                // Reloj y fecha
                 ctx.font = "bold 32px 'Orbitron', monospace";
                 ctx.fillStyle = "#00f3ff";
                 ctx.shadowColor = "#00f3ff";
@@ -429,11 +429,11 @@
                 ctx.fillText("MDRP", 0, 16);
                 ctx.restore();
 
-                // Recuadro de auspicio fijo en la ventana principal
-                const sName = (localStorage.getItem('ventaniya_name') || document.getElementById('sponsorName').value).toUpperCase();
-                const sPhone = localStorage.getItem('ventaniya_phone') || document.getElementById('sponsorPhone').value;
-                const sAddress = localStorage.getItem('ventaniya_address') || document.getElementById('sponsorAddress').value;
-                const sMsg = localStorage.getItem('ventaniya_msg') || document.getElementById('sponsorMsg').value;
+                // Recuadro de auspicio fijo con datos oficiales de memoria
+                const sName = (localStorage.getItem('ventaniya_name') || "COMERCIO AUSPICIANTE").toUpperCase();
+                const sPhone = localStorage.getItem('ventaniya_phone') || "+54 9 11 0000-0000";
+                const sAddress = localStorage.getItem('ventaniya_address') || "Av. Principal 123";
+                const sMsg = localStorage.getItem('ventaniya_msg') || "@tucomercio";
 
                 const boxX = 25, boxY = canvas.height - 170, boxW = 750, boxH = 140;
 
@@ -471,7 +471,9 @@
             };
         }
 
-        // BOTÓN 1: Guarda los cambios y actualiza de inmediato la PANTALLA PRINCIPAL de la cartelera
+        // ELIMINADO EL LISTENER EN VIVO: Escribir en los inputs ya no altera la pantalla principal automáticamente.
+
+        // BOTÓN 1: Guarda los inputs y la estampa seleccionada, y los fija de forma definitiva en la ventana principal
         document.getElementById('btnSetFixed').onclick = () => {
             if(!selectedPath) return;
             localStorage.setItem('ventaniya_name', document.getElementById('sponsorName').value);
@@ -482,11 +484,11 @@
 
             renderCarteleraPrincipal();
             const msg = document.getElementById('statusMsg');
-            msg.textContent = "¡Aviso fijado en la pantalla principal!";
+            msg.textContent = "¡Aviso fijado en la ventana principal correctamente!";
             setTimeout(() => { msg.textContent = ""; }, 3500);
         };
 
-        // BOTÓN 2: Es el ÚNICO botón que descarga la estampa de la pantalla principal a la PC
+        // BOTÓN 2: Descarga la imagen actual que está fija en la pantalla principal
         document.getElementById('btnDownload').onclick = () => {
             renderCarteleraPrincipal();
             setTimeout(() => {
