@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cartelera Automática con Auspicio Fijo | VentaniYA</title>
+    <title>Cartelera VentaniYA - Doble Opción</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -181,13 +181,19 @@
 
         #preview-canvas { max-width: 100%; height: auto; display: block; }
 
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
         .btn-action {
             background: linear-gradient(90deg, #00f3ff, #0077ff);
             color: #000;
             font-family: 'Orbitron', sans-serif;
             font-weight: 700;
             border: none;
-            padding: 14px;
+            padding: 12px;
             border-radius: 4px;
             cursor: pointer;
             text-transform: uppercase;
@@ -195,9 +201,17 @@
             box-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
             transition: all 0.2s;
             text-align: center;
+            font-size: 0.85rem;
         }
 
         .btn-action:hover { background: #fff; color: #000; box-shadow: 0 0 15px #fff; }
+
+        .btn-secondary {
+            background: linear-gradient(90deg, #ff007f, #aa0055);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(255, 0, 127, 0.5);
+        }
+        .btn-secondary:hover { background: #fff; color: #000; box-shadow: 0 0 15px #fff; }
     </style>
 </head>
 <body>
@@ -205,7 +219,7 @@
     <header>
         <div class="brand">
             <h1>VENTANIYA</h1>
-            <p>CARTELERA AUTOMÁTICA CON AUSPICIO FIJO</p>
+            <p>CARTELERA AUTOMÁTICA - DOBLE OPCIÓN</p>
         </div>
         <div class="casio-clock-container">
             <div id="live-time" class="time-display">00:00:00.000</div>
@@ -222,7 +236,7 @@
         </div>
 
         <div class="editor-panel">
-            <div class="editor-title">Aviso Fijo del Avisador (Quemado en Imagen)</div>
+            <div class="editor-title">Panel de Datos del Auspiciante</div>
             
             <div class="form-group">
                 <label>Nombre del Comercio:</label>
@@ -245,13 +259,16 @@
             </div>
 
             <div class="form-group">
-                <label>Vista Previa (Con el aviso ya fijo):</label>
+                <label>Vista Previa en Tiempo Real:</label>
                 <div class="preview-container">
                     <canvas id="preview-canvas" width="600" height="600"></canvas>
                 </div>
             </div>
 
-            <button class="btn-action" id="btnDownload">Descargar Estampa con Auspicio Fijo</button>
+            <div class="button-group">
+                <button class="btn-action" id="btnDownloadFixed">1. Cargar como Aviso Fijo</button>
+                <button class="btn-action btn-secondary" id="btnDownloadClean">2. Descargar Estampilla Limpia</button>
+            </div>
         </div>
     </div>
 
@@ -303,14 +320,14 @@
                         document.querySelectorAll('.estampa-card').forEach(c => c.classList.remove('selected'));
                         card.classList.add('selected');
                         selectedPath = file.name;
-                        redrawCanvas();
+                        redrawCanvas(true);
                     });
 
                     grid.appendChild(card);
 
                     if (index === 0) {
                         selectedPath = file.name;
-                        redrawCanvas();
+                        redrawCanvas(true);
                     }
                 });
 
@@ -323,7 +340,7 @@
         const canvas = document.getElementById('preview-canvas');
         const ctx = canvas.getContext('2d');
 
-        function redrawCanvas() {
+        function redrawCanvas(includeSponsor) {
             if (!selectedPath) return;
 
             const img = new Image();
@@ -334,14 +351,13 @@
                 canvas.width = 600;
                 canvas.height = 600;
 
-                // 1. Dibuja la estampa base
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
                 ctx.fillStyle = "rgba(5, 8, 20, 0.25)";
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-                // 2. Dibuja hora y fecha en pantalla
+                // Línea de tiempo y reloj superior
                 ctx.font = "bold 24px 'Orbitron', monospace";
                 ctx.fillStyle = "#00f3ff";
                 ctx.shadowColor = "#00f3ff";
@@ -354,48 +370,7 @@
                 ctx.shadowBlur = 8;
                 ctx.fillText(document.getElementById('live-date').textContent, 25, 70);
 
-                // 3. QUEMA EL AVISO DEL AUSPICIANTE FIJO ABAJO EN LA IMAGEN
-                const sName = document.getElementById('sponsorName').value.toUpperCase();
-                const sPhone = document.getElementById('sponsorPhone').value;
-                const sAddress = document.getElementById('sponsorAddress').value;
-                const sMsg = document.getElementById('sponsorMsg').value;
-
-                const boxX = 20, boxY = canvas.height - 130, boxW = 560, boxH = 100;
-
-                ctx.save();
-                ctx.shadowColor = "#00f3ff";
-                ctx.shadowBlur = 15;
-                ctx.fillStyle = "rgba(5, 8, 20, 0.95)";
-                ctx.strokeStyle = "#00f3ff";
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.rect(boxX, boxY, boxW, boxH);
-                ctx.fill();
-                ctx.stroke();
-                ctx.restore();
-
-                let textStartX = boxX + 20;
-
-                ctx.font = "bold 20px 'Orbitron', monospace";
-                ctx.fillStyle = "#00f3ff";
-                ctx.shadowColor = "#00f3ff";
-                ctx.shadowBlur = 10;
-                ctx.fillText(sName, textStartX, boxY + 28);
-
-                ctx.font = "bold 13px 'Share Tech Mono', monospace";
-                ctx.fillStyle = "#ffffff";
-                ctx.shadowColor = "#ffffff";
-                ctx.shadowBlur = 5;
-                ctx.fillText(sPhone, textStartX, boxY + 52);
-                ctx.fillText(sAddress, textStartX, boxY + 72);
-
-                ctx.font = "bold 13px 'Share Tech Mono', monospace";
-                ctx.fillStyle = "#ff007f";
-                ctx.shadowColor = "#ff007f";
-                ctx.shadowBlur = 6;
-                ctx.fillText(sMsg, textStartX, boxY + 92);
-
-                // Sello decorativo de VentaniYa
+                // Sello decorativo
                 ctx.save();
                 ctx.translate(canvas.width - 75, 75);
                 ctx.beginPath();
@@ -418,21 +393,79 @@
                 ctx.font = "bold 7px 'Orbitron', monospace";
                 ctx.fillText("MDRP", 0, 14);
                 ctx.restore();
+
+                // Si se solicita, dibuja el cartel de auspicio fijo
+                if (includeSponsor) {
+                    const sName = document.getElementById('sponsorName').value.toUpperCase();
+                    const sPhone = document.getElementById('sponsorPhone').value;
+                    const sAddress = document.getElementById('sponsorAddress').value;
+                    const sMsg = document.getElementById('sponsorMsg').value;
+
+                    const boxX = 20, boxY = canvas.height - 130, boxW = 560, boxH = 100;
+
+                    ctx.save();
+                    ctx.shadowColor = "#00f3ff";
+                    ctx.shadowBlur = 15;
+                    ctx.fillStyle = "rgba(5, 8, 20, 0.95)";
+                    ctx.strokeStyle = "#00f3ff";
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.rect(boxX, boxY, boxW, boxH);
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+
+                    let textStartX = boxX + 20;
+
+                    ctx.font = "bold 20px 'Orbitron', monospace";
+                    ctx.fillStyle = "#00f3ff";
+                    ctx.shadowColor = "#00f3ff";
+                    ctx.shadowBlur = 10;
+                    ctx.fillText(sName, textStartX, boxY + 28);
+
+                    ctx.font = "bold 13px 'Share Tech Mono', monospace";
+                    ctx.fillStyle = "#ffffff";
+                    ctx.shadowColor = "#ffffff";
+                    ctx.shadowBlur = 5;
+                    ctx.fillText(sPhone, textStartX, boxY + 52);
+                    ctx.fillText(sAddress, textStartX, boxY + 72);
+
+                    ctx.font = "bold 13px 'Share Tech Mono', monospace";
+                    ctx.fillStyle = "#ff007f";
+                    ctx.shadowColor = "#ff007f";
+                    ctx.shadowBlur = 6;
+                    ctx.fillText(sMsg, textStartX, boxY + 92);
+                }
             };
         }
 
-        // Si cambias los datos del input, se actualizan de inmediato en el canvas
         ['sponsorName', 'sponsorPhone', 'sponsorAddress', 'sponsorMsg'].forEach(id => {
-            document.getElementById(id).addEventListener('input', redrawCanvas);
+            document.getElementById(id).addEventListener('input', () => redrawCanvas(true));
         });
 
-        // Al hacer clic, descarga la estampa con el aviso fijo grabado en el archivo PNG
-        document.getElementById('btnDownload').onclick = () => {
+        // Botón 1: Descarga con el aviso fijo grabado
+        document.getElementById('btnDownloadFixed').onclick = () => {
             if(!selectedPath) return;
-            const link = document.createElement('a');
-            link.download = `Estampa-Auspicio-VentaniYA.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            redrawCanvas(true);
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.download = `Estampa-Con-AvisoFijo.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }, 100);
+        };
+
+        // Botón 2: Descarga la estampilla limpia sin el cartel de abajo
+        document.getElementById('btnDownloadClean').onclick = () => {
+            if(!selectedPath) return;
+            redrawCanvas(false);
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.download = `Estampilla-Limpia.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                redrawCanvas(true); // Vuelve a mostrar el preview con el aviso
+            }, 100);
         };
 
         cargarRepositorioAutomatico();
